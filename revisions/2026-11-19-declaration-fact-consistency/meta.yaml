@@ -1,0 +1,60 @@
+revision_id: rev-2026-11-19-declaration-fact-consistency
+title: 声明-事实一致性检查（状态机正典唯一）
+
+status: benchmarked
+
+linked_stories: []
+linked_changes: []
+prd_refs: []
+
+introduces_rules:
+  - tool.r11
+modifies_rules: []
+removes_rules: []
+
+affected_baselines:
+  - scripts/check_declaration_fact.py
+  - AGENTS.md
+  - domains/tooling/_summary.yaml
+
+commits: []
+
+benchmark:
+  mode: regression
+  test: 造漂移 → 必须报错（两次实验）
+  before: |
+    加 benchmarked 状态时，改完 revisions/WORKFLOW.md 后仍有 3 处写着旧状态机
+    （domains/tooling/revisions/_summary.yaml 的 r5 文本、
+     domains/tooling/revisions/index.md 的状态表、
+     foundations/progress-traceability-and-binding.md 的模板注释与三端表），
+    全靠人工 grep 才找齐。
+  after: |
+    脚本自动检出。验证：
+    (1) 把 WORKFLOW.md 状态链改回旧版 → 报 2 个 error
+        （"实际状态 [archived, benchmarked] 未出现在正典" +
+          "副本出现正典中没有的状态"）
+    (2) 全仓正常态 → errors=0 warnings=94 info=0
+  command: python scripts/check_declaration_fact.py
+  notes: |
+    首次实现用"所有文档状态链的并集"作声明源，实测失效——改坏正典后因为
+    domains/tooling/revisions/index.md 里还留着 benchmarked，并集仍包含它，
+    报 0 error。改为以 revisions/WORKFLOW.md 为正典、副本与之比对后才有效。
+    这条"检查本身必须先被验证能抓到错误"的经验已写进脚本 docstring。
+  fresh_context: true
+  fresh_context_note: |
+    回归证据由脚本自动产出；两次造漂移实验是破坏性验证（改坏→看是否报错→恢复），
+    不依赖作者主观判断。
+
+created_at: 2026-11-19
+created_by: agent
+reviewed_by: null
+reviewed_at: null
+merged_at: null
+archived_at: null
+
+trigger_summary: |
+  上一轮加 benchmarked 状态时发现：规则改了，同一概念在其他三处仍写着旧说法，
+  而全仓没有任何机制能自动发现。这是治理文档特有的失败模式——文档自我漂移，
+  读者（尤其 AI）读到哪一处就以哪一处为准，治理本身变成矛盾源。
+  新增 scripts/check_declaration_fact.py 做四类检查（规则号/路径/脚本/状态机），
+  其中状态机检查以 revisions/WORKFLOW.md 为唯一正典，副本与之比对。

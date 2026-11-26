@@ -1,0 +1,82 @@
+# Project .gitignore — rendered by scripts/bootstrap-windows.ps1
+# Source template: templates/project-gitignore.template
+# Generated for: {{PROJECT_NAME}}
+# Adopted at:    {{ADOPTED_AT}}
+
+# ────────────────────────────────────────────────────────────
+# BMAD / OpenSpec / governance runtime artifacts
+# ────────────────────────────────────────────────────────────
+_bmad-output/
+openspec/changes/*/.draft/
+.bmad-cache/
+
+# ────────────────────────────────────────────────────────────
+# Local agent / IDE state（每开发者可能本地不同）
+# ────────────────────────────────────────────────────────────
+.codex/local/
+.cursor/local/
+.claude/local/
+.agents/local/
+
+# ────────────────────────────────────────────────────────────
+# Node.js
+# ────────────────────────────────────────────────────────────
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+.pnpm-store/
+
+# ────────────────────────────────────────────────────────────
+# Python
+# ────────────────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+venv/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+*.egg-info/
+
+# ────────────────────────────────────────────────────────────
+# Build / dist
+# ────────────────────────────────────────────────────────────
+dist/
+build/
+out/
+target/
+*.tsbuildinfo
+
+# ────────────────────────────────────────────────────────────
+# Env / secrets（这些绝对不能进库）
+# ────────────────────────────────────────────────────────────
+.env
+.env.local
+.env.*.local
+*.pem
+*.key
+secrets.yaml
+secrets.json
+
+# ────────────────────────────────────────────────────────────
+# OS / editor
+# ────────────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+*~
+.vscode/
+.idea/
+*.iml
+
+# ────────────────────────────────────────────────────────────
+# Logs / temporary
+# ────────────────────────────────────────────────────────────
+*.log
+logs/
+tmp/
+temp/

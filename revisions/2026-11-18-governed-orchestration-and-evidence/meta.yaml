@@ -1,0 +1,30 @@
+revision_id: rev-2026-11-18-governed-orchestration-and-evidence
+title: 治理编排域（借 evolver 的统计 / AutoResearch 的证据）
+
+status: candidate
+
+linked_stories: []
+linked_changes: []
+prd_refs: []
+
+introduces_rules:
+  - proj.orch.r1
+  - proj.orch.r2
+  - proj.orch.r3
+  - proj.orch.r4
+  - proj.orch.r5
+  - proj.orch.r6
+  - proj.orch.r7
+  - proj.orch.r8
+
+modifies_rules: []
+removes_rules: []
+
+affected_baselines:
+  - domains/orchestration/_summary.yaml
+  - domains/orchestration/index.md
+
+trigger_summary: |
+  evolver 与 AutoResearch 用相反的方法解同一问题（统计 vs 证据），却收敛到同一条铁律：
+  "没发生"与"正常"在数据结构上长得一样时，系统会把失败统计成成功。
+  本 revision 新增编排域，把证据闭环、晋升淘汰、声明式路由收敛成 8 条规则。

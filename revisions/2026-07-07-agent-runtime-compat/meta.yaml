@@ -1,0 +1,50 @@
+revision_id: rev-2026-07-07-agent-runtime-compat
+title: 跨 agent 运行时兼容层 + 确定性生命周期闸
+
+status: candidate
+
+linked_stories: []
+linked_changes: []
+prd_refs: []
+
+introduces_rules:
+  - tool.r5
+  - tool.r6
+
+modifies_rules: []
+removes_rules: []
+
+affected_baselines:
+  - .claude/skills/governance-continue/SKILL.md
+  - scripts/sync-agent-skills.py
+  - scripts/install_cursor_hooks.py
+  - templates/cursor-hooks/hooks.json.example
+  - templates/cursor-hooks/guard_dangerous_command.py
+  - templates/cursor-hooks/checkpoint_consistency.py
+  - domains/tooling/_summary.yaml
+  - domains/agent-tooling-mcp.md
+  - project-governance.yaml
+  - scripts/check_worktree_hygiene.py
+  - AGENTS.md
+  - revisions/index.yaml
+  - _logs/sync-ledger.md
+
+commits: []
+
+created_at: 2026-07-07
+created_by: agent
+reviewed_by: null
+reviewed_at: null
+merged_at: null
+archived_at: null
+
+trigger_summary: |
+  gov.S04.03 回归评估结论：治理内核完备，但对最近几个月 agent 运行时支持有两处缺口。
+  ① 技能发现分叉：Cursor 兼容读 .claude/skills，Codex（2025-12 起 skills 化）只读 .agents/skills，
+  本仓 60+ 技能对 Codex 不可见 → 新增 sync-agent-skills.py 确定性镜像 + tool.r5（must）。
+  ② 无物理闸：治理入口/规则是软约束、模型可忽略 → 新增 Cursor hooks 模板（危险命令 guard + 收尾一致性
+  自检，纯 Python 零依赖不依赖 jq）+ install_cursor_hooks.py + tool.r6（should）+ agent-tooling-mcp §10。
+  .agents/skills 纳入 generated_artifacts 与 check_worktree_hygiene 默认 glob。
+  增补：把 tool.binding.r10 检查点协议封装成治理自有 skill .claude/skills/governance-continue（镜像到
+  .agents/skills）。根因洞察——脏改动本质是"用户说继续→agent 直接规划下一步、上一段 preview/迭代产出未归档
+  提交"的历史堆积；本 skill 把"继续"变成收敛闸从源头阻止堆积。skill 不引入新规则，是 r10 的执行封装。

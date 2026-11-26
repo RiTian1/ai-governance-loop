@@ -1,0 +1,111 @@
+schema_version: 1
+
+domain: tool.binding
+canonical_owner: true
+inherits_from: tool
+
+tags:
+  - binding
+  - traceability
+  - progress
+  - state-machine
+  - drift
+
+rules:
+  - id: tool.binding.r1
+    text: Story ↔ change ↔ revision 三端必须双向反向引用；缺一端引用即视为绑定失败
+    severity: must
+    cross_refs: [foundations/progress-traceability-and-binding §3, tooling/progress-binding/index.md §1]
+    introduced_at: 2026-05-26
+    introduced_by: rev-2026-05-26-progress-traceability-binding
+
+  - id: tool.binding.r2
+    text: Story 状态、change 状态、revision 状态必须按 §4 三端对齐表合法对齐；任一漂移由 check_progress_consistency.py 阻断 CI
+    severity: must
+    cross_refs: [foundations/progress-traceability-and-binding §4]
+    introduced_at: 2026-05-26
+    introduced_by: rev-2026-05-26-progress-traceability-binding
+
+  - id: tool.binding.r3
+    text: Story.acceptance_criteria_hash 与对应 change.spec_delta_hash 必须联动更新；任一端变更而另一端不变 = 内容漂移
+    severity: must
+    cross_refs: [tooling/progress-binding/index.md §4]
+    introduced_at: 2026-05-26
+    introduced_by: rev-2026-05-26-progress-traceability-binding
+
+  - id: tool.binding.r4
+    text: 所有 commit message 必须含 Story 行；Change/Revision/Rules 至少一行非 none；pre-commit 阻断违规 commit
+    severity: must
+    cross_refs: [foundations/progress-traceability-and-binding §3.5]
+    introduced_at: 2026-05-26
+    introduced_by: rev-2026-05-26-progress-traceability-binding
+
+  - id: tool.binding.r5
+    text: 月度必须跑 gen_progress_matrix.py；matrix 中所有 drift 必须在下一轮 health report 闭环或合法豁免
+    severity: must
+    cross_refs: [foundations/self-governance-and-knowledge-evolution §2]
+    introduced_at: 2026-05-26
+    introduced_by: rev-2026-05-26-progress-traceability-binding
+
+  - id: tool.binding.r6
+    text: pre-commit 双闸（本地）+ CI 双闸（PR）必须同时启用；禁止仅靠本地 hook（可被 --no-verify 绕过）
+    severity: must
+    cross_refs: [tooling/progress-binding/index.md §2]
+    introduced_at: 2026-05-26
+    introduced_by: rev-2026-05-26-progress-traceability-binding
+
+  - id: tool.binding.r7
+    text: 启用 progress-binding 子域的项目必须在 project-governance.yaml 中声明 project_id（kebab-case），作为所有跨工具 ID 前缀
+    severity: must
+    cross_refs: [foundations/progress-traceability-and-binding §2]
+    introduced_at: 2026-05-26
+    introduced_by: rev-2026-05-26-progress-traceability-binding
+
+  - id: tool.binding.r8
+    text: 新增 / 收敛 / 修补工作必须新建 story 或 change 承载；禁止把新工作挂到状态为 done/archived 的 Story 上（否则"已完成"失真）。check_progress_consistency T9 检出 active change 挂在已完成 Story 上的违例
+    severity: must
+    cross_refs: [foundations/progress-traceability-and-binding §4, 05-ai-collaboration-policy §5.1]
+    introduced_at: 2026-06-05
+    introduced_by: rev-2026-06-05-portable-closed-loop-enforcement
+
+  - id: tool.binding.r9
+    text: 状态字段（completed/done/archived/active_sprint/status=merged）是闭环的最后一步，必须在 check_progress_consistency 通过后、且与其它工件联动后才写入；终态 Story 不得指向仍为 candidate 的 revision（状态提前写入 = 漂移）。check_progress_consistency T10 检出
+    severity: must
+    cross_refs: [foundations/progress-traceability-and-binding §4, 04-verification-policy §5.1]
+    introduced_at: 2026-06-05
+    introduced_by: rev-2026-06-05-portable-closed-loop-enforcement
+
+  - id: tool.binding.r10
+    text: 检查点协议——用户明确要求收尾、归档或提交，或当前变更已达到收尾阶段且即将开启新 OpenSpec 变更时，按 05-ai-collaboration-policy §7.3 执行工作区归因、归档判定、人工验证确认、工件提交和双向同步；普通继续、CLI resume、上下文压缩不触发。
+    severity: must
+    cross_refs: [05-ai-collaboration-policy §7.3, foundations/progress-traceability-and-binding §3.5]
+    introduced_at: 2026-07-07
+    introduced_by: rev-2026-07-07-longtask-and-resource-guardrails
+
+  - id: tool.binding.r11
+    text: 功能迭代/代码变更默认双载体——用户需求含功能迭代或业务代码变更时，MUST 同时有 BMAD Story（挂 PRD FR）与 OpenSpec change 且双向绑定（r3 哈希联动），动代码前先建载体；纯治理/文档/知识库工作允许 Story+Revision 替代 change。commit 变更命中 manifest code_paths 时 check_commit_message 强制 Change 非 none
+    severity: must
+    cross_refs: [tool.binding.r3, tool.binding.r8, tool.r1]
+    introduced_at: 2026-07-20
+    introduced_by: rev-2026-07-20-dual-track-default-prd-openspec
+
+  - id: tool.binding.r12
+    text: change 目录下的 design / tasks / 测试模板属于变更局部工件，MUST NOT 被当作项目级基线引用；只有抽象后经 revisions/ 晋升到 domains/ 或 foundations/ 或主文档的内容才是基线。读到 change 内设计时 MUST 先确认其晋升状态
+    severity: must
+    cross_refs: [revisions/WORKFLOW.md §2, 02-engineering-principles §7]
+    introduced_at: 2026-11-19
+    introduced_by: rev-2026-11-19-rule-promotion-benchmark-gate
+
+context_dependencies:
+  - tool
+  - tool.bmad
+  - tool.openspec
+  - tool.revisions
+  - foundations/progress-traceability-and-binding
+
+changelog:
+  - 2026-05-26: 子域初建；引入 7 条 must 规则覆盖 §3 §4 §5 三大绑定域
+  - 2026-06-05: 增 r8（禁挂已完成 Story）+ r9（状态字段最后一步且联动）；rev-2026-06-05-portable-closed-loop-enforcement
+  - 2026-07-07: 增 r10（检查点协议："继续"/新变更前 归档确认+双向同步+规范提交推送）；rev-2026-07-07-longtask-and-resource-guardrails
+  - 2026-07-20: 增 r11（功能迭代默认双载体 Story+change；code_paths 命中时 commit 强制 Change 非 none）；rev-2026-07-20-dual-track-default-prd-openspec
+  - 2026-11-19: 增 r12（change 工件不是基线，须经 revisions 晋升）；rev-2026-11-19-rule-promotion-benchmark-gate

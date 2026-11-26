@@ -1,0 +1,46 @@
+# AGENTS.md — {{PROJECT_NAME}}
+
+> {{PROJECT_DESCRIPTION}}
+>
+> 母版同步基准: governance @ `{{MASTER_REPO_COMMIT}}` (branch `{{MASTER_REPO_BRANCH}}`)
+> 接入时间:     {{ADOPTED_AT}}
+
+简短路由表（建议 <150 行）。详见 `project-governance.yaml` 与 `{{GOVERNANCE_ROOT}}/00-index.yaml`。
+
+## 布局
+
+- `governance_layout: {{GOVERNANCE_LAYOUT}}`
+- `governance_root: {{GOVERNANCE_ROOT}}`
+- `project_id: {{PROJECT_ID}}`
+- `project_type_profile: {{PROFILE}}`
+
+## 强制启动顺序
+
+1. `project-governance.yaml`
+2. `{{GOVERNANCE_ROOT}}/00-index.yaml`（按 `when_to_read` 加载）
+3. `{{GOVERNANCE_ROOT}}/profiles/{{PROFILE}}.md` → foundations / domains
+4. 变更：`openspec/changes/<change>/` + 验证政策
+
+## 事实清单（问前先查 · 答后落账，MUST）
+
+长程任务优先使用 CLI 原生恢复与压缩；仅在明确阶段边界按需用 scripts/rsi_checkpoint.py 保存任务状态。在 {{GOVERNANCE_ROOT}}/rsi/ 仅登记 CLI session 摘要与定位，必要时回查原文。试点协议见 {{GOVERNANCE_ROOT}}/foundations/agent-rsi-engineering.md。
+
+- 涉及测试/部署/运行的凭证、地址、端口、环境 → **先查** `runtime-context.yaml`；开发约定 → **先查** `docs/project-rules.md`。清单已有的**不得再问使用者**（`ops.runtime-context.r8`）。
+- 使用者当轮提供的可复用事实 → **当轮写回**上述对应清单；凭证只写引用（source+id）禁明文（r9）。
+- 两份清单按需读取、不常驻上下文；体量上限见 r10。
+
+## 默认工作流
+
+- **功能迭代 / 代码变更（MUST，`tool.binding.r11`）**：双载体——BMAD Story（挂 PRD FR）+ OpenSpec change 双向绑定，动代码前先建载体；`/opsx:propose` → `/opsx:apply` → `/opsx:verify` → 检查点归档（归档前见 `openspec/ARCHIVE-CHECKLIST.md`）
+- 治理 / 文档工作：Story + Revision 可替代 change
+- 命中 manifest `code_paths` 的提交强制 `Change:` 非 none（commit-msg 硬闸）
+
+## 禁止
+
+- 跳过 manifest 全量加载治理目录
+- 可复用规则只写聊天（应写 `{{GOVERNANCE_ROOT}}/revisions/`）
+- 重复询问事实清单中已有的凭证/地址/环境信息
+
+## 权威优先级
+
+验证政策 → foundations → domains → profiles → agents（governance 字段）

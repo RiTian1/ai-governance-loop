@@ -1,0 +1,46 @@
+# 治理门禁 CI 镜像（GitHub Actions）— tool.r10
+#
+# 为什么需要：git hook 可被 `git commit --no-verify` 一键绕过、Cursor hooks 只在
+# Cursor 内生效；远端 CI 是唯一不可绕过的确定性层。本 workflow 把本地四道闸在
+# CI 侧重跑一遍（脚本零依赖，仅 check_knowledge_health 需要 pyyaml）。
+#
+# 安装：复制到目标项目 .github/workflows/governance-gates.yml；
+# 若治理内容根不是仓库根（docs-governance-subtree 布局），改 GOV_ROOT。
+
+name: governance-gates
+
+on:
+  pull_request:
+  push:
+    branches: [main, master]
+
+jobs:
+  gates:
+    runs-on: ubuntu-latest
+    env:
+      GOV_ROOT: "."          # docs-governance-subtree 布局改为 docs/governance
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0      # commit message 校验需要 git 历史
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: 进度一致性（strict）
+        run: python "$GOV_ROOT/scripts/check_progress_consistency.py" --governance-root "$GOV_ROOT" --strict
+
+      - name: 内容闸（明文凭证 + UTF-8，全量）
+        run: python "$GOV_ROOT/scripts/check_staged_content.py" --project-root . --all
+
+      - name: 常驻上下文 token 预算闸
+        run: python "$GOV_ROOT/scripts/check_context_budget.py" --project-root .
+
+      - name: commit message 协议（HEAD）
+        run: python "$GOV_ROOT/scripts/check_commit_message.py" --rev HEAD --governance-root "$GOV_ROOT"
+
+      - name: 知识库健康（需 pyyaml；仅治理内容根存在 domains/ 时有效）
+        run: |
+          pip install pyyaml --quiet
+          python "$GOV_ROOT/scripts/check_knowledge_health.py" --governance-root "$GOV_ROOT" --all

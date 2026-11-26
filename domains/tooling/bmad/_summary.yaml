@@ -1,0 +1,56 @@
+schema_version: 1
+
+domain: tool.bmad
+canonical_owner: true
+inherits_from: tool
+
+tags:
+  - bmad
+  - planning
+  - prd
+  - epic
+  - story
+
+rules:
+  - id: tool.bmad.r1
+    text: BMAD 启用须 frameworks.bmad.enabled=true 且 _bmad/<project>/ 含 brief/prd/architecture/epics/stories 至少各一份；空开关违反 tool.r1
+    severity: must
+    cross_refs: [tooling, project-governance]
+    introduced_at: 2026-05-26
+    introduced_by: rev-2026-05-26-progress-traceability-binding
+
+  - id: tool.bmad.r2
+    text: BMAD 工件单源在 _bmad/；.claude/skills/bmad-*/ 是 sync-bmad-skills.py 生成的薄壳，禁止双向编辑
+    severity: must
+    cross_refs: [BMAD-SINGLE-SOURCE, tooling/bmad/index.md §2]
+    introduced_at: 2026-05-26
+    introduced_by: rev-2026-05-26-progress-traceability-binding
+
+  - id: tool.bmad.r3
+    text: BMAD Story 必须含 frontmatter（story_id/epic_id/prd_refs/status/linked_change/linked_revision/acceptance_criteria_hash），缺一即视为非法 Story
+    severity: must
+    cross_refs: [foundations/progress-traceability-and-binding §3.1, tooling/progress-binding]
+    introduced_at: 2026-05-26
+    introduced_by: rev-2026-05-26-progress-traceability-binding
+
+  - id: tool.bmad.r4
+    text: BMAD Story 不得复制 OpenSpec spec 内容；Story 通过 linked_change 反向引用 spec delta（tool.r2 的具化）
+    severity: must
+    cross_refs: [tooling/openspec]
+    introduced_at: 2026-05-26
+    introduced_by: rev-2026-05-26-progress-traceability-binding
+
+  - id: tool.bmad.r5
+    text: 每个 epic 至少含 1 个 story；每个 story 至少含 1 条 acceptance criterion；空 epic / 空 AC story 禁入
+    severity: must
+    cross_refs: []
+    introduced_at: 2026-05-26
+    introduced_by: rev-2026-05-26-progress-traceability-binding
+
+context_dependencies:
+  - tool
+  - tool.openspec
+  - tool.progress-binding
+
+changelog:
+  - 2026-05-26: 子域初建；formalize BMAD 单源策略 + frontmatter 协议

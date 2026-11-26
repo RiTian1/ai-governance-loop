@@ -1,0 +1,71 @@
+revision_id: rev-2026-07-07-longtask-and-resource-guardrails
+title: 长任务与资源护栏 + 字段实战驱动的运行时治理
+
+status: candidate
+
+linked_stories: []
+linked_changes: []
+prd_refs: []
+
+introduces_rules:
+  - ops.long-running-task.r1
+  - ops.long-running-task.r2
+  - ops.long-running-task.r3
+  - ops.long-running-task.r4
+  - ops.long-running-task.r5
+  - ops.long-running-task.r6
+  - ops.long-running-task.r7
+  - ops.housekeeping.r10
+  - ops.housekeeping.r11
+  - tool.binding.r10
+
+modifies_rules: []
+removes_rules: []
+
+affected_baselines:
+  - domains/operations/long-running-task/index.md
+  - domains/operations/long-running-task/_summary.yaml
+  - domains/operations/_index.yaml
+  - domains/operations/_summary.yaml
+  - domains/operations/index.md
+  - domains/operations/housekeeping/index.md
+  - domains/operations/housekeeping/_summary.yaml
+  - domains/tooling/progress-binding/_summary.yaml
+  - 00-index.yaml
+  - foundations/progress-traceability-and-binding.md
+  - AGENTS.md
+  - CLAUDE.md
+  - scripts/export-governance-rules.py
+  - domains/agent-tooling-mcp.md
+  - domains/frontend.md
+  - 04-verification-policy.md
+  - 05-ai-collaboration-policy.md
+  - templates/runtime-context-manifest-template.yaml
+  - project-governance.yaml
+  - scripts/preflight_check.py
+  - scripts/finish_and_verify.py
+  - scripts/check_worktree_hygiene.py
+  - revisions/index.yaml
+  - _logs/sync-ledger.md
+
+commits: []
+
+created_at: 2026-07-07
+created_by: agent
+reviewed_by: null
+reviewed_at: null
+merged_at: null
+archived_at: null
+
+trigger_summary: |
+  一个月字段实战（<internal-workdir> AI 工作流/渗透平台 + ai 复刻项目）暴露：既有治理只管"结果对不对"，
+  不管"执行会不会失控"——单会话 56 次长任务被人为中断、E2E 无脑并行打满宿主机、masscan/dnsrecon
+  拖垮共驻 LLM 调用、部署前不做资源预检空耗两小时、多环境模板/镜像版本漂移、可视化 20+ 轮截图返工。
+  本 revision 引入执行期护栏：long-running-task L2 子域（7 规则）+ preflight_check 预检脚本 +
+  runtime-context 环境矩阵 + 04 §7 资源门 + MCP §9 危险命令隔离 + frontend DoD 前置 + finish_and_verify 收尾编排。
+  增补（同主题）：本机最新会话暴露"频繁输入继续"+"推进中 git 脏改动"两痛点 → 05 §7 推进纪律（连续推进不靠继续
+  + 工作树卫生）+ ops.housekeeping.r10/r11（生成产物 churn 归因）+ scripts/check_worktree_hygiene.py +
+  project-governance.yaml generated_artifacts 声明。
+  增补 2：tool.binding.r10 检查点协议——"继续"/新变更前必经：工作区归因 → 归档条件判定 → 询问人工验证标志
+  （确认后归档）→ 归档与代码同一次提交 → PRD↔OpenSpec 双向同步 → <type>(<scope>): 中文 + trailers 提交
+  push → 分支从主分支新拉、解冲突后 push、merge 由用户执行（05 §7.3 / foundation §3.5 / AGENTS / CLAUDE / 导出规则五处同源）。

@@ -1,0 +1,11 @@
+schema_version: 1
+domain: rsi
+authority: cli-session
+derived_index: true
+description: CLI 对话权威记录的简短摘要、任务关联与回溯定位
+compatibility: rsi/native-cli-compatibility.md
+entry_schema: templates/rsi-session-index-template.json
+max_entry_bytes: 16384
+autoload: false
+paths:
+  sessions: rsi/sessions/<project_id>/<cli>-<identity-hash>.json

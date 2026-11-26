@@ -1,0 +1,61 @@
+revision_id: rev-2026-11-20-capability-map-four-layer
+title: 四端绑定补全（PRD FR 层）与治理能力地图
+
+status: benchmarked
+
+linked_stories: []
+linked_changes: [gov.C04.26]
+prd_refs: [gov.FR05]
+
+introduces_rules:
+  - tool.r13
+modifies_rules:
+  - tool.binding.r1
+removes_rules: []
+
+affected_baselines:
+  - _bmad/gov/prd.md
+  - _bmad/gov/epics/
+  - docs/governance-roadmap/
+  - scripts/check_capability_map.py
+  - scripts/check_progress_consistency.py
+  - domains/tooling/_summary.yaml
+
+commits: []
+
+benchmark:
+  mode: regression
+  test: 四端绑定闭合性检查（补全前应有错，补全后应为 0）
+  before: |
+    python scripts/check_capability_map.py
+    → errors=9
+      F2-story-missing      gov.S05.01 / gov.S05.03 / gov.S05.04 / gov.S04.26 尚未创建
+      F3-change-missing     gov.C04.26 不存在
+      F4-revision-missing   rev-2026-11-20-capability-map-four-layer 不存在
+      F4-revision-missing   rev-2026-11-18-<业务域>-ops-routine（地图笔误，实际是 11-19）
+      F2-story-no-prd       gov.S04.25 的 prd_refs 为空
+      R1-fr-uncovered       gov.NFR03 无能力覆盖
+  after: |
+    python scripts/check_capability_map.py
+    → errors=0 warnings=0
+      capabilities=29 deferred=3 frs=17 stories=30 changes=3
+  command: python scripts/check_capability_map.py
+  notes: |
+    9 个 error 里有 2 个是我在写地图时新引入的不一致（revision 日期笔误、
+    NFR03 漏覆盖），被校验器在同一轮内抓到——这正好证明它不是"为已有事实
+    补一张表"，而是真的在执行校验。
+  fresh_context: true
+  fresh_context_note: |
+    校验器输出为脚本确定性产物，不依赖作者判断；前后对比可直接复跑。
+
+created_at: 2026-11-20
+created_by: agent
+reviewed_by: null
+reviewed_at: null
+merged_at: null
+archived_at: null
+
+trigger_summary: |
+  foundations 声明了四端绑定，实际只接三端：prd.md 不存在、prd_refs 全空、
+  FR_ID_RE 从未被使用、epic_id 全悬空。补 PRD 层 + 29 能力地图 + 校验器，
+  并用红转绿（9→0 error）作为回归证据。

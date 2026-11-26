@@ -1,0 +1,65 @@
+# Revision meta.yaml
+# Schema: foundations/progress-traceability-and-binding.md §3.3
+# Template: templates/revision-structured-directory-template/meta.yaml
+
+revision_id: rev-2026-05-26-bootstrap-script-overhaul
+title: Bootstrap 脚本能力提升 — 修复 2 个致命 bug + 2 项设计缺陷（端到端项目接入）
+
+status: candidate
+
+# 反向引用
+linked_stories: []      # 待 BMAD Story 立项（gov.SXX.YY-bootstrap-script-overhaul）
+linked_changes: []      # 待 OpenSpec change 立项（如果分拆为多个 change）
+prd_refs: []
+
+# 影响分析
+introduces_rules: []    # 本 revision 不引入新 rule，仅修脚本与生成模板（属于 gov/tooling 域的实现层）
+modifies_rules: []
+removes_rules: []
+
+# 影响的基线文件（脚本 + 模板 + 一处 profile 文档）
+affected_baselines:
+  - scripts/bootstrap-windows.ps1
+  - scripts/bootstrap-ide-tools.ps1
+  - scripts/bootstrap.sh
+  - scripts/bootstrap-macos.sh
+  - scripts/bootstrap-ide-tools.sh
+  - templates/AGENTS.md.template                          # 添加 master_repo_commit_at_adoption 占位
+  - templates/project-governance-manifest-template.yaml   # frameworks/agent_evals/mcp_connectors/ide_rules_export/ai_ide_tools/adoption_source 段对齐
+  - templates/runtime-context-manifest-template.yaml      # 脚本调用渲染目标
+  - templates/requirement-intake-template.md              # 项目特有 intake.md fork 源
+  - profiles/solo-developer.md                            # +defaults frontmatter
+  - profiles/backend-service.md
+  - profiles/desktop-application.md
+  - profiles/embedded-system.md
+  - profiles/ml-system.md
+  - profiles/native-security-runtime.md
+  - profiles/security-research.md
+  - 07-bootstrap-and-adoption-guide.md                    # 文档对齐脚本新参数
+  - 08-project-activation-model.md                        # adoption_source 字段对齐
+
+commits: []
+
+created_at: 2026-05-26
+created_by: agent (codex via cursor opus-4.7)
+reviewed_by: null
+reviewed_at: null
+merged_at: null
+archived_at: null
+
+trigger_summary: |
+  2026-05-26 在 <业务项目B> dogfood scripts/bootstrap-windows.ps1
+  端到端接入新业务项目时，暴露 2 个致命 bug + 2 项设计缺陷：
+    B1 bootstrap-ide-tools.ps1:54 To-BmadTools 函数 -join 语法错（Step 5 完全 fail）
+    B2 bootstrap-ide-tools.ps1:91 BMAD install 写死 --action install，与 Step 3 已复制
+       _bmad/ 冲突，CLI 拒绝（要求 update / quick-update）
+    D1 greenfield 默认 mother-repo-root layout 把治理污染业务项目仓根（11 个 *.md +
+       多个治理子树直接在根目录），脚本将 "项目阶段（greenfield/brownfield）" 与
+       "治理 layout（mother-repo-root/docs-governance-subtree）" 耦合为同一个 Step 2
+       选择
+    D2 多项关键缺失：脚本不自动 git init / 不生成 .gitignore / 不生成 runtime-context.yaml /
+       AGENTS.md 直接复制母版（未 fork 项目特有版本） / _bmad/<project_id>/ 命名空间未初始化 /
+       project-governance.yaml 中 enabled_foundations/enabled_domains/enabled_templates
+       全空（profile 不起作用） / 未记录 master_repo_commit_at_adoption（同步基准缺失）
+  另发现母版仓 working tree 在 2026-05-26 18:43 前的某次操作中被 BMAD CLI 重写污染
+  （567 files changed, -76754 lines），需在动 bootstrap 前定位污染源 + 恢复母版基线。

@@ -1,0 +1,63 @@
+schema_version: 1
+
+domain: tool.revisions
+canonical_owner: true
+inherits_from: tool
+
+tags:
+  - revisions
+  - candidate
+  - global-baseline
+  - state-machine
+
+rules:
+  - id: tool.revisions.r1
+    text: 全局基线变更（写入 foundations / domains / 主文档）必须经 revisions/ candidate；禁止改基线无 revision 留痕
+    severity: must
+    cross_refs: [02-engineering-principles §7-§8, revisions/WORKFLOW.md]
+    introduced_at: 2026-05-26
+    introduced_by: rev-2026-05-26-progress-traceability-binding
+
+  - id: tool.revisions.r2
+    text: 新立 candidate 优先用结构化目录形态（meta.yaml + proposal.md + tasks.md + delta/ + evidence/）；历史单 md 兼容保留
+    severity: should
+    cross_refs: [tooling/revisions/index.md §2]
+    introduced_at: 2026-05-26
+    introduced_by: rev-2026-05-26-progress-traceability-binding
+
+  - id: tool.revisions.r3
+    text: revisions/index.yaml 必须列全所有 revision 且无孤儿；status=merged 的实际文件必须在 revisions/archive/<year>/
+    severity: must
+    cross_refs: [tooling/progress-binding]
+    introduced_at: 2026-05-26
+    introduced_by: rev-2026-05-26-progress-traceability-binding
+
+  - id: tool.revisions.r4
+    text: revision 引入的 rule 必须在对应 _summary.yaml 中反向引用 introduced_by=<revision_id>；命名严格 rev-<YYYY-MM-DD>-<slug>，禁止自由文本
+    severity: must
+    cross_refs: [foundations/progress-traceability-and-binding §3.4]
+    introduced_at: 2026-05-26
+    introduced_by: rev-2026-05-26-progress-traceability-binding
+
+  - id: tool.revisions.r5
+    text: 状态机仅允许 candidate→benchmarked→accepted|rejected→implementing→merged→archived 顺向转换；benchmarked 为评审前置不可跳过（可用 waiver 满足）；逆向回退须新立 revision 解释
+    severity: must
+    cross_refs: [tooling/revisions/index.md §1, revisions/WORKFLOW.md §1]
+    introduced_at: 2026-05-26
+    introduced_by: rev-2026-05-26-progress-traceability-binding
+
+  - id: tool.revisions.r6
+    text: 规则晋升 MUST 先产出评测证据（前后对比含方向一致数 / 回归测试 / waiver）再进入评审；MUST NOT 以"已按流程实施"替代"证明规则有效"；评测 MUST 用 fresh context，MUST NOT 复用规则作者或执行者的会话上下文
+    severity: must
+    cross_refs: [revisions/WORKFLOW.md §4, 04-verification-policy.md §6.4]
+    introduced_at: 2026-11-19
+    introduced_by: rev-2026-11-19-rule-promotion-benchmark-gate
+
+context_dependencies:
+  - tool
+  - tool.openspec
+  - tool.progress-binding
+
+changelog:
+  - 2026-05-26: 子域初建；状态机加 implementing 中间态；引入结构化目录协议
+  - 2026-11-19: r5 状态机插入 benchmarked 中间态（r6 考核评测证据）；来源 项目A 运行时 agent 治理的 promotion gate

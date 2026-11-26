@@ -1,0 +1,115 @@
+# 治理母版仓库 — 项目激活清单
+# 业务项目复制母版后请用 templates/project-governance-manifest-template.yaml 生成自己的文件
+
+project_id: gov                              # progress-binding 协议要求 kebab-case 短前缀；用于 Story/Change/Revision/Rule ID 拼接
+project_name: AI Governance Framework (Mother)
+project_stage: mother-template
+
+governance_layout: mother-repo-root
+governance_root: .
+
+project_type_profile:
+  - solo-developer
+
+active_baseline:
+  charter: 01-charter.md
+  engineering_principles: 02-engineering-principles.md
+  phase_governance: 02-phase-governance.md
+  workflow: 03-document-workflow.md
+  verification: 04-verification-policy.md
+  ai_collaboration: 05-ai-collaboration-policy.md
+  references: 06-reference-and-standards-policy.md
+  activation: 08-project-activation-model.md
+  securitybuddy_development: 09-securitybuddy-development.md
+  layout: LAYOUT.md
+
+enabled_foundations:
+  - architecture-and-design-craftsmanship
+  - failure-and-reliability-thinking
+  - modeling-and-state-machine-thinking
+  - self-governance-and-knowledge-evolution
+  - progress-traceability-and-binding         # 母版 dogfood：进度可追溯与跨工具绑定
+
+enabled_domains:
+  - agent-tooling-mcp
+  - coding-standards
+  - automation
+  - operations
+  - tooling                                   # L1 域；自动包含 4 个 L2 子域 (bmad/openspec/revisions/progress-binding)
+  - soft-waf-platform-adaptation              # 软 WAF 平台适配与测试前置约束（来自公司基线同步包）
+  - projects                                  # 项目轴（顶层树，不在 domains/ 下）：产品实例台账
+  - business-references                       # 业务参考轴（顶层树，与项目轴同级）：现场/靶标/竞品，related_projects 多值
+
+enabled_templates:
+  - project-governance-manifest-template
+  - agents-governance-integration-template
+
+local_overrides: []
+
+authority_map:
+  active_project_rules:
+    - LAYOUT.md
+    - AGENTS.md
+  project_specific_docs:
+    - docs/governance/INTEGRATION-GUIDE.md
+  deprecated_parallel_rules: []
+
+frameworks:
+  openspec:
+    enabled: true
+    default: true
+  bmad:
+    enabled: true
+    note: 默认双载体（tool.binding.r11）——功能迭代必须 Story(PRD FR)+OpenSpec change 双向绑定，防 PRD 进度落后
+  superpowers:
+    enabled: false
+
+agent_evals:
+  enabled: false
+  provider: promptfoo
+  pr_gate:
+    enabled: false
+    block_merge_on_fail: true
+    min_pass_rate: 0.85
+  notes: 复制 templates/agent-evals-manifest-template.yaml 并启用 evals/
+
+mcp_connectors: []
+
+ide_rules_export:
+  cursor_rules_dir: .cursor/rules
+  copilot_instructions: .github/copilot-instructions.md
+  regenerate_command: python scripts/export-governance-rules.py
+
+migration_mode:
+  status: none
+  notes: 本仓库为母版；业务项目请使用 docs-governance-subtree 布局
+
+upstream_versions: UPSTREAM-VERSIONS.yaml
+
+# 02-engineering-principles.md §11 / foundations/self-governance-and-knowledge-evolution.md
+token_budget: 8000
+
+# tool.r8：常驻入口面（AGENTS/CLAUDE/alwaysApply mdc/copilot）单工具组预算；scripts/check_context_budget.py 强制
+resident_token_budget: 6000
+
+# tool.binding.r11：业务代码 glob——commit 变更命中即强制 Change: 非 none（check_commit_message）。
+# 母版无业务代码（scripts/ 属治理工作，走 Story+Revision 路径），故为空；业务项目必须填。
+code_paths: []
+
+# domains/operations/runtime-context/index.md
+runtime_context: runtime-context.yaml
+
+# domains/operations/housekeeping/index.md §4.2（ops.housekeeping.r10/r11）
+# 工具生成/同步产物：其 churn 只能由 canonical 源确定性重生成，不手改、不混入无关提交。
+# 校验：python scripts/check_worktree_hygiene.py
+generated_artifacts:
+  - ".claude/skills/bmad-*/**"          # BMAD v6.10 安装器产物（sync-upstream.ps1 替换）
+  - ".claude/skills/openspec-*/**"      # OpenSpec CLI 安装/更新（中文化正文为治理维护层）
+  - ".claude/commands/opsx/*.md"        # OpenSpec init 写入（中文化正文为治理维护层）
+  - ".agents/skills/**"                 # scripts/sync-agent-skills.py 从 .claude/skills 镜像（Codex/Cursor 兼容）
+  - ".cursor/rules/governance-*.mdc"    # scripts/export-governance-rules.py 生成
+  - ".github/copilot-instructions.md"   # 同上
+
+adoption_source:
+  governance_template_origin: .
+  adopted_at: 2026-05-21

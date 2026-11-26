@@ -1,0 +1,70 @@
+revision_id: rev-2026-11-19-ai-output-quality-clauses
+title: AI 产出质量条款（不确定显式、数字不许省、按源类型分支、成本上限）
+
+status: benchmarked
+
+linked_stories: []
+linked_changes: []
+prd_refs: []
+
+introduces_rules: []
+modifies_rules: []
+removes_rules: []
+
+affected_baselines:
+  - 05-ai-collaboration-policy.md
+
+commits: []
+
+benchmark:
+  mode: paired_comparison
+  source: docs/experiments/rsi-realworld/SUMMARY-20261119-five-tasks.md
+  n: 10
+  metric: unsupported_density / citation_rate / numeric_per_kchar / input_tokens
+  effect:
+    - name: 不确定标注被压制
+      task: T02-data-audit
+      baseline: 1.46
+      governance: 1.06
+      delta_pct: -27.4
+      test: {type: paired_t, value: -2.06}
+      direction_consistency: "治理组更少 8/10"
+    - name: 数字密度下降
+      task: T03-config-drift
+      delta_pct: -23.8
+      test: {type: paired_t, value: -2.32}
+      notes: 同任务 M01 为 d=-0.90, t=-2.21
+    - name: 追溯率按源类型分化
+      task: T03-vs-T02-vs-T04
+      notes: |
+        T03（yaml/md）+52.2% (t=+2.11)
+        T02（csv）-17.6% (t=-0.86)
+        T04（网页）-42.2% (t=-1.22)
+        同一套条款在三种源上效果相反
+    - name: 成本膨胀
+      task: M01-memory-systems
+      n: 6
+      delta_pct: +80.3
+      test: {type: paired_t, value: 1.24}
+      notes: 步数 +37.7% (t=+2.03)、output +83% (t=+2.03)，质量分仅 +5.3
+  notes: |
+    本条 revision 是把已有实验结果转成条款，不是新实验。证据来自
+    rev 之前完成的 RSI 五任务十轮配对实验，数据已归档。
+  fresh_context: true
+  fresh_context_note: |
+    证据来自独立的配对实验（执行者与条款作者分离：实验由脚本跑，
+    条款由人写），不满足"同一会话内自评"的污染条件。
+
+created_at: 2026-11-19
+created_by: agent
+reviewed_by: null
+reviewed_at: null
+merged_at: null
+archived_at: null
+
+trigger_summary: |
+  RSI 五任务实验发现四条与任务类型无关的结构性缺陷：(1) 条款压制不确定表达
+  （T02 t=-2.06）；(2) 数字条款导致规避（T03 t=-2.32、M01 t=-2.21）；
+  (3) 引用要求不区分源类型，在 csv/网页上反噬（T02 -17.6%、T04 -42.2%）；
+  (4) 无成本上限，M01 input +80%、步数 +38% 但质量无改善。
+  这四条不需新实验即可修，写入 05-ai-collaboration-policy.md §8。

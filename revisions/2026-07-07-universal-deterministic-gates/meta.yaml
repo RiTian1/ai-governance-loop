@@ -1,0 +1,55 @@
+revision_id: rev-2026-07-07-universal-deterministic-gates
+title: 通用确定性门禁能力（接入即具备，无 git 自动降级）
+
+status: candidate
+
+linked_stories: []
+linked_changes: []
+prd_refs: []
+
+introduces_rules:
+  - ops.housekeeping.r12
+  - tool.r7
+
+modifies_rules: []
+removes_rules: []
+
+affected_baselines:
+  - scripts/check_worktree_hygiene.py
+  - scripts/install_git_hooks.py
+  - scripts/install_cursor_hooks.py
+  - scripts/install_governance_gates.py
+  - scripts/upgrade_project_gates.py
+  - scripts/bootstrap.sh
+  - scripts/bootstrap-windows.ps1
+  - .claude/skills/openspec-bootstrap/SKILL.md
+  - docs/governance/INTEGRATION-GUIDE.md
+  - domains/operations/housekeeping/_summary.yaml
+  - domains/tooling/_summary.yaml
+  - AGENTS.md
+  - CLAUDE.md
+  - revisions/index.yaml
+  - _logs/sync-ledger.md
+
+commits: []
+
+created_at: 2026-07-07
+created_by: agent
+reviewed_by: null
+reviewed_at: null
+merged_at: null
+archived_at: null
+
+trigger_summary: |
+  项目A 会话（本机 Codex）审计结论：软规则（tool.binding.r10 / proj.r10）拦不住"归档后脏工作区"复发，
+  2026-07-07 最后一条用户消息即质问该问题再次出现。根因不是规则缺失，而是确定性硬闸没被普遍安装、
+  hook 体不查工作树卫生、且母版侧修复没同步进存量项目（项目A 旧快照连门禁脚本都没有）。
+  唯一跨 agent（Cursor/Codex/命令行提交都触发、模型无法忽略）的确定性层是 git 钩子。
+  本 revision 把确定性门禁做成"治理接入任意项目即具备"的能力：
+  ① check_worktree_hygiene 新增 --assert-staged-pure（拦生成产物 churn 与真实改动混提交，ops.housekeeping.r12）；
+  ② install_git_hooks pre-commit 追加该卫生闸；③ 修 install_cursor_hooks brownfield 布局 bug（--project-root）；
+  ④ 新增统一入口 install_governance_gates.py（有 .git 装门禁、无 .git 优雅降级退出 0、可选 Cursor 本地闸、收尾自检）；
+  ⑤ bootstrap 三平台 + openspec-bootstrap skill 全接入，镜像刷新 .agents/skills；
+  ⑥ 新增 upgrade_project_gates.py 供存量项目从母版侧幂等补装门禁 bundle 并激活；
+  ⑦ tool.r7（接入必经统一入口 must）+ INTEGRATION-GUIDE §3.3/§3.4 + AGENTS/CLAUDE 工具表。
+  设计边界：git 钩子为主干、Cursor hooks 为可选加分；"没有 git 的项目就不载入 git hook"是设计内降级路径。

@@ -1,0 +1,63 @@
+revision_id: rev-2026-11-20-gates-portability
+title: 门禁可移植性（降级环境矩阵 + 去掉 pyyaml 硬依赖）
+
+status: benchmarked
+
+linked_stories: []
+linked_changes: []
+prd_refs: [gov.NFR01]
+
+introduces_rules: []
+modifies_rules: []
+removes_rules: []
+
+affected_baselines:
+  - scripts/check_gates_portability.py
+  - scripts/check_knowledge_health.py
+  - docs/governance-roadmap/CAPABILITY-MAP.yaml
+
+commits: []
+
+benchmark:
+  mode: regression
+  test: 13 个门禁脚本在「无 pyyaml / 无 .git / 整树只读」下的退出码与 stderr
+  before: |
+    check_knowledge_health.py 硬依赖 pyyaml，ImportError 时 sys.exit(2)：
+
+      $ python3 -c "import yaml"
+      ModuleNotFoundError: No module named 'yaml'
+      $ python3 scripts/check_knowledge_health.py --all
+      ERROR: pyyaml not installed.          # exit 2
+
+    在新 macOS（系统 Python 3.9.6）、精简容器、多数 CI 镜像上，
+    整套知识库检查等于不存在——而且崩在启动阶段，没人会注意到。
+
+    反向验证（把兜底改回旧行为，确认判据抓得到）：
+      $ python scripts/check_gates_portability.py --env noyaml
+      check_knowledge_health.py  FAIL  启动失败 → 退出码 2：ERROR: pyyaml not installed.
+      (exit 1)
+  after: |
+    改为在 ImportError 时回退仓库自带的 MiniYaml（scripts/_governance_yaml.py），
+    并新增四环境矩阵自测：
+
+      $ python scripts/check_gates_portability.py
+      === base === / === nogit === / === noyaml === / === ro ===
+      全部优雅降级（退出码 ∈ {0,1}，无 Traceback）      # exit 0
+
+    三平台实测：Windows 11 + 3.13.14（有 pyyaml）、Linux 24.04 + 3.10.12
+    （pyyaml 5.4.1）、macOS 14.8.8 + 系统 Python 3.9.6（**无 pyyaml**），
+    各 52 项（13 脚本 × 4 环境）全绿。
+
+    判定标准是"退出码 ∈ {0,1} 且 stderr 无 Traceback"，不是"跑出 0"——
+    允许打印"跳过 X（原因）"并 exit 0，这正是"零依赖、随处可跑"的含义。
+
+verification:
+  - 三平台矩阵：52/52 × 3
+  - 反向验证：注入 sys.exit(2) → FAIL；恢复 → 0
+  - 治理校验：capability_map / progress_consistency / index_freshness /
+    declaration_fact 四项 errors=0
+
+notes: |
+  本 revision 不引入新规则：tool.r14 与其余规则未变。
+  它只补一条 check（check_gates_portability.py）并修掉一处遗留硬依赖。
+  成熟度：cap.exec.portable M1 → M2（证据类型 destructive_test）。

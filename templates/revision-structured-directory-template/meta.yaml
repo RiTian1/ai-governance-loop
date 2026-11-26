@@ -1,0 +1,39 @@
+# Revision meta.yaml 模板
+# 规范: foundations/progress-traceability-and-binding.md §3.3
+# 文件位置: revisions/<YYYY-MM-DD>-<slug>/meta.yaml
+
+revision_id: rev-YYYY-MM-DD-short-slug   # 必须严格 rev-<YYYY-MM-DD>-<slug> 格式
+title: <一句话标题>
+
+status: candidate                         # candidate | accepted | rejected | implementing | merged | archived
+
+# 反向引用（必须）
+linked_stories: []                        # [<project_id>.S<NN>.<MM>, ...] 可空
+linked_changes: []                        # [<project_id>.C<NN>.<MM>, ...] 可空
+prd_refs: []                              # [<project_id>.FR<N>, ...] 可空
+
+# 影响分析（必须）
+introduces_rules: []                      # 本 revision 引入的 rule_id（必须与 _summary.yaml 反向呼应）
+modifies_rules: []                        # 本 revision 修改 text/severity 的 rule_id
+removes_rules: []                         # 本 revision 删除的 rule_id
+
+# 影响的基线文件（必须）
+affected_baselines: []                    # 路径列表，例如:
+                                          #   - foundations/<file>.md
+                                          #   - domains/<l1>/<l2>/index.md
+                                          #   - 02-engineering-principles.md
+
+# 关联 commit（由 scripts/link_revision_to_commits.py 自动 fill）
+commits: []
+
+# 评审与归档元数据
+created_at: YYYY-MM-DD                    # ISO 日期
+created_by: <handle 或 agent>
+reviewed_by: null                         # accepted/rejected 时填
+reviewed_at: null
+merged_at: null                           # merged 时填
+archived_at: null                         # archived 时填
+
+# 触发来源（自由文本，简短）
+trigger_summary: |
+  <为什么要立这个 revision>

@@ -1,0 +1,23 @@
+revision_id: rev-2026-10-27-nas-project-materials
+title: 统一 NAS 开源物料与项目发版产物目录
+status: candidate
+linked_stories: []
+linked_changes: []
+prd_refs: []
+introduces_rules: [projects.r5]
+modifies_rules: [ops.release-records.<采集项目>.r5]
+removes_rules: []
+affected_baselines:
+  - projects/_summary.yaml
+  - domains/devops-ci/build-and-release.md
+  - domains/operations/release-records/<采集项目>/
+  - infrastructure/nas-materials-layout.md
+commits: []
+created_at: 2026-10-27
+created_by: agent
+reviewed_by: null
+reviewed_at: null
+merged_at: null
+archived_at: null
+trigger_summary: |
+  用户要求 NAS 固态区统一存放开源项目源码与各项目发版产物，并按项目、版本、release/debug、升级包/完整包分层，附快速上手与维护索引。现有材料散落在顶层和旧产品目录，需先确立目标与迁移边界。

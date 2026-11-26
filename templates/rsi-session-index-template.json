@@ -1,0 +1,17 @@
+{
+  "schema_version": 1,
+  "authority": "cli-session",
+  "derived": true,
+  "project_id": "example-project",
+  "cli": "codex",
+  "session_id": "cli-native-session-id",
+  "host": "machine-name",
+  "locator": "cli-native-session-id-or-verified-uri",
+  "task_id": "example-task",
+  "summary": "Short, verified description of work performed",
+  "keywords": [],
+  "source_anchors": [],
+  "artifact_refs": [],
+  "recorded_at": "YYYY-MM-DDTHH:MM:SSZ",
+  "source_access": "unverified"
+}

@@ -1,0 +1,79 @@
+schema_version: 1
+domain: proj.orch.routing
+note: |
+  声明式路由。给定同一组信号必定命中同一能力域，不依赖模型判断——
+  分类错了没人能复现，而查表错了可以 diff、可以加用例、可以回归。
+
+  优先级：explicit（用户显式指定）> paths/extensions > keywords。
+  多条命中时取"domain 数最少"的那条（更具体者优先），仍并列则全装。
+
+signals:
+  - explicit      # 用户或上游显式指定域（最高优先级）
+  - paths         # 变更文件路径
+  - extensions    # 文件类型
+  - keywords      # 文本关键词
+
+routes:
+  - id: security-boundary
+    when:
+      any_keywords: [鉴权, 权限, 越权, token, 密钥, 凭证, 注入, XSS, CSRF, 加密, 签名]
+      any_paths: ["**/auth/**", "**/security/**", "**/crypto/**", "**/acl/**"]
+    load: [security, project/state-lifecycle-and-recovery]
+    evidence: [安全评审清单, 威胁面说明]
+
+  - id: data-migration
+    when:
+      any_keywords: [迁移, 迁移脚本, 表结构, 数据修复, 回滚, 备份]
+      any_extensions: [.sql]
+      any_paths: ["**/migrations/**", "**/schema/**"]
+    load: [data-governance-and-privacy, project/state-lifecycle-and-recovery]
+    evidence: [迁移前后行数对比, 回滚演练记录]
+
+  - id: ops-runtime
+    when:
+      any_keywords: [部署, 上线, 发布, 端口, 服务, 进程, 容器, systemd, 监控, 日志轮转]
+      any_paths: ["**/docker-compose*", "**/Dockerfile", "**/*.service", "**/deploy/**"]
+    load: [operations/runtime-context, devops-ci, operations/long-running-task]
+    evidence: [健康检查输出, 资源占用快照]
+
+  - id: tooling-binding
+    when:
+      any_keywords: [story, change, revision, 归档, 提交, 校验, 门禁, spec delta]
+      any_paths: ["openspec/**", "revisions/**", "_bmad/**"]
+    load: [tooling/progress-binding, tooling/revisions, project/state-lifecycle-and-recovery]
+    evidence: [一致性检查输出, 哈希对齐说明]
+
+  - id: knowledge-curation
+    when:
+      any_keywords: [知识库, 索引, 去噪, 晋升, 淘汰, 沉淀, 反哺, 复用]
+      any_paths: ["domains/**/_summary.yaml", "foundations/**", "00-index.yaml"]
+    load: [orchestration, foundations/self-governance-and-knowledge-evolution]
+    evidence: [健康检查输出, 晋升/淘汰依据]
+
+  - id: ui-surface
+    when:
+      any_keywords: [界面, 布局, 交互, 动效, 主题, 无障碍, 渲染]
+      any_extensions: [.slint, .css, .tsx, .vue]
+    load: [frontend, project/cross-platform-best-practice]
+    evidence: [离屏渲染截图, 交互状态说明]
+
+  - id: agent-runtime
+    when:
+      any_keywords: [agent, 会话, 步进, 中断, 续跑, 并发, 队列, 引擎, 模型]
+      any_paths: ["项目A-ai/**", "项目A-core/**", "**/agent*/**"]
+    load: [project/state-lifecycle-and-recovery, project/agent-core-governance, orchestration]
+    evidence: [步进记录, 会话落盘证据]
+
+fallback:
+  # 没有任何信号命中时：只装最小集，并要求调用方补信号，而不是"猜一个域"
+  load: [foundations]
+  on_miss: require_signal
+  message: 没有可判定的意图信号；请显式指定域或补充关键词，不要依赖默认装配
+
+anti_patterns:
+  - id: model-classification
+    text: 用模型判断"这属于哪个域"——不可复现，出错无法回归
+  - id: silent-default
+    text: 没命中就装全部域或装一个默认域——前者浪费预算，后者会漏判
+  - id: keyword-only
+    text: 只看关键词不看路径——"优化一下"这类指令会命中一堆无关域

@@ -1,0 +1,58 @@
+revision_id: rev-2026-06-05-portable-closed-loop-enforcement
+title: 便携 git-optional 闭环治理强制执行（脚本零依赖 + 入口不可跳过协议 + 同步台账）
+
+status: candidate
+
+linked_stories: []
+linked_changes: []
+prd_refs: []
+
+introduces_rules:
+  - tool.binding.r8
+  - tool.binding.r9
+
+modifies_rules: []
+removes_rules: []
+
+affected_baselines:
+  - scripts/_governance_yaml.py
+  - scripts/check_progress_consistency.py
+  - scripts/check_commit_message.py
+  - scripts/gen_progress_matrix.py
+  - scripts/export-governance-rules.py
+  - scripts/install_git_hooks.py
+  - scripts/requirements.txt
+  - scripts/bootstrap.sh
+  - scripts/bootstrap-windows.ps1
+  - docs/governance/INTEGRATION-GUIDE.md
+  - AGENTS.md
+  - CLAUDE.md
+  - 03-document-workflow.md
+  - 04-verification-policy.md
+  - 05-ai-collaboration-policy.md
+  - foundations/progress-traceability-and-binding.md
+  - domains/tooling/progress-binding/_summary.yaml
+  - domains/operations/capacity/_summary.yaml
+  - domains/operations/change/_summary.yaml
+  - domains/operations/dr/_summary.yaml
+  - domains/operations/housekeeping/_summary.yaml
+  - domains/operations/oncall/_summary.yaml
+  - domains/operations/runbook/_summary.yaml
+  - domains/operations/runtime-context/_summary.yaml
+  - revisions/index.yaml
+  - _logs/sync-ledger.md
+
+commits: []
+
+created_at: 2026-06-05
+created_by: agent
+reviewed_by: null
+reviewed_at: null
+merged_at: null
+archived_at: null
+
+trigger_summary: |
+  下游项目 dogfood 暴露：治理"规则文本"与"检查脚本"齐全，但二者断链——存在规则、存在 checker，
+  却没有任何自动强制点，且脚本 fail-open（缺 pyyaml 时 exit 2，被 agent 当环境问题跳过）。
+  本 revision 把闭环治理改成 git-optional 的强制执行：脚本零依赖 + fail-closed；入口契约（AGENTS/CLAUDE/
+  政策文档/导出规则）改成 CRUD=同步事件的不可跳过 STOP 门；新增同步台账兜底；git 门禁降级为可选附加层。

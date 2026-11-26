@@ -1,0 +1,24 @@
+# 治理门禁 CI 镜像（GitLab CI）— tool.r10
+#
+# 为什么需要：git hook 可被 `git commit --no-verify` 绕过；远端 CI 是不可绕过层。
+#
+# 安装（二选一）：
+#   a. 直接并入目标项目 .gitlab-ci.yml（拷贝 governance-gates job）；
+#   b. include: - local: 'templates/ci/gitlab-ci-governance-gates.yml'
+# 若治理内容根不是仓库根（docs-governance-subtree 布局），改 GOV_ROOT 变量。
+
+governance-gates:
+  stage: test
+  image: python:3.12-slim
+  variables:
+    GOV_ROOT: "."            # docs-governance-subtree 布局改为 docs/governance
+    GIT_DEPTH: "0"           # commit message 校验需要历史
+  script:
+    - python "$GOV_ROOT/scripts/check_progress_consistency.py" --governance-root "$GOV_ROOT" --strict
+    - python "$GOV_ROOT/scripts/check_staged_content.py" --project-root . --all
+    - python "$GOV_ROOT/scripts/check_context_budget.py" --project-root .
+    - python "$GOV_ROOT/scripts/check_commit_message.py" --rev HEAD --governance-root "$GOV_ROOT"
+    - pip install pyyaml --quiet && python "$GOV_ROOT/scripts/check_knowledge_health.py" --governance-root "$GOV_ROOT" --all
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+    - if: '$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH'

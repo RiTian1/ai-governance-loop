@@ -1,0 +1,57 @@
+revision_id: rev-2026-11-20-m3-bypass-evidence
+title: M3 判据扩展——约束型能力用 bypass_attempt 替代 effect_size
+
+status: benchmarked
+
+linked_stories: []
+linked_changes: []
+prd_refs: [gov.FR12, gov.NFR03]
+
+introduces_rules: []
+modifies_rules: []
+removes_rules: []
+
+affected_baselines:
+  - scripts/check_capability_map.py
+  - docs/governance-roadmap/CAPABILITY-MAP.yaml
+
+commits: []
+
+benchmark:
+  mode: regression
+  test: M3 判据的 7 组输入（含全对 / 漏 N / 样本不足 / 空输入 / 原路径 / 缺字段 / M4 顶替）
+  before: |
+    M3 只有一个入口 effect_size。约束型能力（保险箱、内容闸、commit 校验）
+    的价值是"挡住不该发生的事"，产不出对照效应量：
+
+      evidence: [destructive_test, defect_found]   # 再多的破坏性测试也只能到 M2
+      current: M2  target: M3  →  永远够不到的 target
+
+    地图上 13 个 M2 里至少 3 个属于这一类，长期挂着红色目标。
+  after: |
+    增加第二条路径。判定要求可核对的数量，不接受定性描述：
+
+      attempts >= 8 且 rejected == attempts
+
+    7 组自测全符合预期：
+      A attempts=10 rejected=10  → 通过
+      B attempts=10 rejected=8   → 报错（有绕过成功）
+      C attempts=5  rejected=5   → 报错（样本不足）
+      D 只有 destructive_test     → 报错
+      E 只有 effect_size          → 通过（原路径不受影响）
+      F 有 attempts 无 rejected   → 报错
+      G M4 + 两处 bypass          → 报错（M4 不放宽）
+
+    历史回归：30 个能力的成熟度分布 M0=1 M1=15 M2=13 M3=1 M4=0
+    与改前完全一致，errors=0。没有能力被动升或降。
+
+verification:
+  - 判据自测 7/7（CHECKLIST D1 要求 ≥4 组）
+  - 历史回归：capabilities=30，分布不变，errors=0
+  - 四项治理校验 errors=0
+
+notes: |
+  刻意不给任何能力升 M3。判据扩展是为约束型能力留门，不是给现在发通行证——
+  真正的升级要等对应能力拿出 ≥8 次绕过尝试的实际测试集。
+  destructive_test 与 bypass_attempt 语义不同，不得互相贴标签：
+  前者是"抓到了一个真实缺陷"，后者是"系统性尝试绕过且全部失败"。

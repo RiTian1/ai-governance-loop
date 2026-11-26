@@ -1,0 +1,825 @@
+# 治理能力地图 —— 双向绑定的唯一权威
+#
+# 本文件是"用治理控制治理迭代"的执行点：治理能力面的任何增删改，
+# MUST 先改本文件，再改实现。校验：python scripts/check_capability_map.py
+#
+# 双向含义：
+#   正向（规划→落地） capability → fr → story → change → revision → rules → checks
+#   反向（代码→意图） 任意 check/rule/story 都能回溯到 fr 与目标成熟度
+#
+# 成熟度口径（不可自评升级，缺证据自动降级）：
+#   M0 仅声明      有文档或规则，无可执行校验
+#   M1 可执行      有脚本/门禁能跑，但未证明能抓错
+#   M2 已证伪能力  破坏性测试证明能抓到真实缺陷（有具体案例）
+#   M3 有对照效应量 配对实验给出量化差异，且方向一致数已报；
+#                  或（仅约束型能力）attempts≥8 的绕过尝试全部被拒且审计可查——
+#                  见 evidence.kind=bypass_attempt，必须带 attempts / rejected 计数
+#   M4 跨任务复现  ≥2 个独立任务同向，且至少 1 个 A 级样本
+#                  注意：bypass_attempt 不替代跨任务复现，M4 仍只认 effect_size
+
+schema: governance-capability-map/v1
+project_id: gov
+updated_at: 2026-11-25
+prd: _bmad/gov/prd.md
+epics_dir: _bmad/gov/epics
+
+capabilities:
+  # ---------- A 装配层：agent 如何拿到正确的约束 ----------
+  - id: cap.assemble.entry
+    name: 根目录入口路由
+    layer: A
+    fr: [gov.FR01]
+    current: M1
+    target: M3
+    mechanism: [AGENTS.md, CLAUDE.md]
+    checks: []
+    rules: []
+    evidence:
+      - kind: declared
+        ref: AGENTS.md
+    story: gov.S05.01
+    change: null
+    revision: null
+    next: 给定 10 个任务描述，实测"应加载域命中率"与"无关域加载率"
+
+  - id: cap.assemble.index
+    name: 机器索引内容正确性
+    layer: A
+    fr: [gov.FR01, gov.FR03]
+    current: M2
+    target: M3
+    mechanism: [00-index.yaml]
+    checks: [scripts/check_index_freshness.py]
+    rules: [tool.r12]
+    evidence:
+      - kind: defect_found
+        ref: docs/experiments/GOVERNANCE-BENCHMARK-OVERVIEW.md
+        note: 9 个域未登记、4 条 path 指向已迁移单文件；修复后 L1=5 legacy=14
+    story: null
+    change: null
+    revision: rev-2026-11-19-index-freshness-gate
+    next: 索引变更后自动回归，而不是靠人记得跑
+
+  - id: cap.assemble.sload
+    name: 稀疏装载与分层装配
+    layer: A
+    fr: [gov.FR02]
+    current: M1
+    target: M3
+    mechanism: [scripts/context_loader.py]
+    checks: []
+    rules: []
+    evidence:
+      - kind: declared
+        ref: 02-engineering-principles.md
+    story: gov.S05.04
+    change: null
+    revision: null
+    next: 测"装对了没"——不只是装得少，还要命中应加载的域
+
+  - id: cap.assemble.budget
+    name: 常驻上下文预算闸
+    layer: A
+    fr: [gov.NFR02]
+    current: M1
+    target: M2
+    mechanism: []
+    checks: [scripts/check_context_budget.py]
+    rules: [tool.r8]
+    evidence:
+      - kind: executable
+        ref: scripts/check_context_budget.py
+    story: null
+    change: null
+    revision: rev-2026-07-20-gate-hardening-budget-secrets-ci
+    next: 补一次破坏性测试（人为超预算，确认能拦住）
+
+  - id: cap.assemble.fresh
+    name: 索引新鲜度门禁
+    layer: A
+    fr: [gov.FR03]
+    current: M2
+    target: M3
+    mechanism: []
+    checks: [scripts/check_index_freshness.py]
+    rules: [tool.r12]
+    evidence:
+      - kind: destructive_test
+        ref: scripts/check_index_freshness.py
+        note: 首次运行即报 13 error（9 unregistered + 4 dangling），修复后 0
+    story: null
+    change: null
+    revision: rev-2026-11-19-index-freshness-gate
+    next: 接入检查点协议，收尾时强制跑
+
+  # ---------- B 责任层：谁在什么时候做什么 ----------
+  - id: cap.chain.dual
+    name: 双载体（Story + Change）
+    layer: B
+    fr: [gov.FR04]
+    current: M1
+    target: M2
+    mechanism: [openspec/changes]
+    checks: [scripts/check_commit_message.py]
+    rules: [tool.binding.r11]
+    evidence:
+      - kind: executable
+        ref: scripts/check_commit_message.py
+    story: null
+    change: null
+    revision: rev-2026-07-20-dual-track-default-prd-openspec
+    next: 统计历史 commit 的 Change 豁免率，看有多少走了旁路
+
+  - id: cap.chain.backref
+    name: 四端反向引用闭合
+    layer: B
+    fr: [gov.FR05]
+    current: M2
+    target: M3
+    mechanism: [foundations/progress-traceability-and-binding.md]
+    checks: [scripts/check_progress_consistency.py, scripts/check_capability_map.py]
+    rules: [tool.binding.r1]
+    evidence:
+      - kind: defect_found
+        ref: scripts/check_progress_consistency.py
+        note: 第四端（PRD FR）在 2026-11-20 前完全未接线，prd_refs 全为 []
+    story: gov.S04.26
+    change: gov.C04.26
+    revision: rev-2026-11-20-capability-map-four-layer
+    next: 本次补第四端；后续靠 check_capability_map 持续校验
+
+  - id: cap.chain.state
+    name: 三端状态机与状态耦合
+    layer: B
+    fr: [gov.FR06]
+    current: M2
+    target: M3
+    mechanism: [scripts/check_progress_consistency.py]
+    checks: [scripts/check_progress_consistency.py]
+    rules: [tool.revisions.r5, tool.binding.r9]
+    evidence:
+      - kind: defect_found
+        ref: revisions/2026-11-19-rule-promotion-benchmark-gate
+        note: 加 benchmarked 状态时，4 处文档仍写旧状态机；declaration_fact 报 2 error
+    story: null
+    change: null
+    revision: rev-2026-11-19-declaration-fact-consistency
+    next: 把"新增状态必须同步 LEGAL_TRIPLES"写进 check 的提示
+
+  - id: cap.chain.crud
+    name: CRUD 同步事件（STOP 门）
+    layer: B
+    fr: [gov.FR04, gov.FR05]
+    current: M1
+    target: M2
+    mechanism: [AGENTS.md]
+    checks: [scripts/check_progress_consistency.py]
+    rules: [tool.binding.r8, tool.binding.r9]
+    evidence:
+      - kind: declared
+        ref: AGENTS.md
+    story: gov.S05.02
+    change: null
+    revision: rev-2026-06-05-portable-closed-loop-enforcement
+    next: 这是纯口头协议，无硬闸；需测"长会话是否真的会漂移"
+
+  - id: cap.chain.checkpoint
+    name: 检查点协议（收尾序列）
+    layer: B
+    fr: [gov.FR07]
+    current: M1
+    target: M2
+    mechanism: [05-ai-collaboration-policy.md]
+    checks: [scripts/check_worktree_hygiene.py]
+    rules: [tool.binding.r10]
+    evidence:
+      - kind: declared
+        ref: 05-ai-collaboration-policy.md
+    story: null
+    change: null
+    revision: rev-2026-07-07-longtask-and-resource-guardrails
+    next: 观察连续 10 次收尾，统计漏执行率
+
+  - id: cap.chain.orphan
+    name: 孤儿与废件检测
+    layer: B
+    fr: [gov.FR05, gov.FR11]
+    current: M2
+    target: M2
+    mechanism: []
+    checks: [scripts/check_progress_consistency.py, scripts/check_knowledge_health.py]
+    rules: []
+    evidence:
+      - kind: defect_found
+        ref: scripts/check_progress_consistency.py
+        note: T7 orphan 检出过未归档 change 与悬空 revision 引用
+    story: null
+    change: null
+    revision: null
+    next: 维持，无需升级
+
+  # ---------- C 证据层：怎么知道做对了 ----------
+  - id: cap.evidence.consistency
+    name: 进度一致性自检
+    layer: C
+    fr: [gov.FR07]
+    current: M2
+    target: M3
+    mechanism: []
+    checks: [scripts/check_progress_consistency.py]
+    rules: [tool.binding.r1]
+    evidence:
+      - kind: defect_found
+        ref: scripts/check_progress_consistency.py
+        note: T9/T10 在设计阶段即抓到"active change 挂已完成 story"
+    story: null
+    change: null
+    revision: rev-2026-05-26-progress-traceability-binding
+    next: 测"有 vs 无此检查"两种状态下，长任务漂移率的差异
+
+  - id: cap.evidence.promotion
+    name: 规则晋升评测门
+    layer: C
+    fr: [gov.FR08]
+    current: M2
+    target: M3
+    mechanism: [revisions/WORKFLOW.md]
+    checks: [scripts/check_progress_consistency.py]
+    rules: [tool.revisions.r6]
+    evidence:
+      - kind: destructive_test
+        ref: revisions/2026-11-19-rule-promotion-benchmark-gate
+        note: 自身走了一遍 benchmarked 门（回归模式，errors=0 before/after）
+    story: null
+    change: null
+    revision: rev-2026-11-19-rule-promotion-benchmark-gate
+    next: 缺"waiver 被滥用"的检测——连续 waiver 目前只靠人看
+
+  - id: cap.evidence.declaration
+    name: 声明-事实一致性
+    layer: C
+    fr: [gov.FR09]
+    current: M2
+    target: M3
+    mechanism: []
+    checks: [scripts/check_declaration_fact.py]
+    rules: [tool.r11]
+    evidence:
+      - kind: destructive_test
+        ref: scripts/check_declaration_fact.py
+        note: 两次破坏性实验（改坏状态机正典 / 造不存在的脚本命令）均报 error
+    story: null
+    change: null
+    revision: rev-2026-11-19-declaration-fact-consistency
+    next: 已知边界多（表格枚举、docs/ 路径不查），需明确"不查什么"清单
+
+  - id: cap.evidence.judge
+    name: 判据自测与历史回归
+    layer: C
+    fr: [gov.FR10]
+    current: M1
+    target: M3
+    mechanism: []
+    checks: []
+    rules: []
+    evidence:
+      - kind: defect_found
+        ref: docs/experiments/rsi-delivery-benchmark/tasks/J3-code-audit/README.md
+        note: 判据三次算错（无一对一约束/别名缺失/权重和超 1），均靠自测才发现
+    story: gov.S05.03
+    change: null
+    revision: null
+    next: 立规则 + 判据模板 + "改判据必回归历史产物"的脚本门
+
+  - id: cap.evidence.maturity
+    name: 成熟度判据的诚实性（M0–M4 门槛校验）
+    layer: C
+    fr: [gov.FR08, gov.FR10]
+    current: M2
+    target: M2
+    mechanism: [scripts/check_capability_map.py]
+    checks: [scripts/check_capability_map.py, scripts/check_capability_map_selftest.py]
+    rules: [tool.r13]
+    evidence:
+      - kind: destructive_test
+        ref: scripts/check_capability_map_selftest.py
+        note: |
+          M3 判据扩展后做了 7 组对抗输入自测（CHECKLIST D1 要求 ≥4 组），
+          已固化为可复跑脚本（exit 0/1）：
+          A 合格 bypass(10/10)→通过、B 有绕过成功(10/8)→报错、
+          C 样本不足(5/5)→报错、D 只有 M2 证据→报错、
+          E 原 effect_size 路径→通过、F 缺 rejected 字段→报错、
+          G 用两处 bypass 顶替 M4→报错。7/7 符合预期。
+          历史回归：30 个能力的成熟度分布改前改后完全一致，errors=0。
+      - kind: defect_found
+        ref: docs/governance-roadmap/CAPABILITY-MAP.yaml
+        note: |
+          改判据前 M3 只认 effect_size，导致约束型能力（vault / 内容闸 /
+          commit 校验）的 target 永远够不到——红目标挂久了就成背景噪声。
+          这不是脚本 bug，是判据设计与能力类型不匹配。
+    story: gov.S04.30
+    change: null
+    revision: rev-2026-11-20-m3-bypass-evidence
+    next: M1/M2 的判据尚未做同等自测（当前只覆盖 M3/M4 双路径）；判据模板化后应能复用到其他 check 脚本
+
+  - id: cap.evidence.benchmark
+    name: 评测执行质量（判分正确性 + 启动前置条件）
+    layer: C
+    fr: [gov.FR14]
+    current: M2
+    target: M3
+    mechanism: [scripts/opencode_preflight.py, scripts/rsi_j3b_<配对实验>_grade.py]
+    checks: [scripts/opencode_preflight.py, scripts/rsi_j3b_<配对实验>_grade.py, scripts/check_gates_portability.py]
+    rules: []
+    evidence:
+      - kind: defect_found
+        ref: scripts/rsi_j3b_<配对实验>_grade.py
+        note: |
+          判分脚本第一版把命中率分子取反（配对表中 base 用了 a+b，那其实是
+          gov 的），算出 base=1.00 → 触发天花板规则 → 得出「本轮测不出东西」
+          的完全错误结论。真实结果是 base=0.619 / gov=1.000 / p=0.0078。
+          判据算错会直接翻转结论，已加 --selftest 12 项（6 组 McNemar 已知值
+          + 6 项配对表语义）固化为可回归检查。
+      - kind: destructive_test
+        ref: scripts/opencode_preflight.py
+        note: |
+          双向验证：挂掉的 <推理端点>（<模型>，100% 502、0.04s 返回）
+          → exit 1 并归因「上游不可用」；活着的 <推理端点>（<模型>）
+          → exit 0，2/2 返回 "OK"。没有这组对照，工具的判别力只是声明。
+          该工具的直接动因是一次真实误判：/v1/models 返回 401 被读成
+          「服务在线，是客户端不写文件」，而实际推理端点 100% 502，
+          导致 6 个实验臂 × 2 轮 = 12 次尝试全部空转。
+      - kind: destructive_test
+        ref: docs/experiments/rsi-delivery-benchmark/runs/2026-11-20-j3b-<配对实验>/summary.md
+        note: |
+          J3b §8.6 配对实验判分（n=21）：主口径 p=0.0078 显著、
+          敏感性口径 p=0.1250 不显著，两口径 base_only 均为 0。
+          报告并列披露双口径、标注 n 未达预注册、列出四条局限。
+          这一条是「口径敏感性必须并列报告」的实例载体。
+    story: gov.S05.09
+    change: null
+    revision: rev-2026-11-25-<配对实验>-verdict
+    next: 把「判分脚本随预注册一起冻结（提交 hash 写进预注册文档）」固化成检查——当前只能靠人记得；另需给 opencode_preflight 补「长跑中途探活」能力，预检只判启动时刻
+
+  - id: cap.evidence.content
+    name: 内容与凭证闸
+    layer: C
+    fr: [gov.FR13]
+    current: M3
+    target: M3
+    mechanism: []
+    checks: [scripts/check_staged_content.py, scripts/check_content_bypass.py]
+    rules: [tool.r9]
+    evidence:
+      - kind: bypass_attempt
+        ref: scripts/check_content_bypass.py
+        attempts: 18
+        rejected: 18
+        note: |
+          18 条真实世界的明文形态全部被抓，10 条易误报形态全部放行（gov.S05.07）。
+          必抓：shell 赋值 / 大写变量 / passwd 变体 / api_key / 驼峰 apiKey /
+          JSON `"password": "..."` / YAML / 注释掉的旧密码 / AWS key /
+          GitHub PAT / GitLab PAT / Bearer / 连接串内嵌口令 / RSA 与 OpenSSH 私钥头。
+          必放：<REDACTED> / "string" / "changeme" / config.db_password /
+          $DB_PASSWORD / md5(password)= 哈希描述 / ****** / 类型注解 / {{ }} 模板。
+          三平台一致：Windows 3.13、Linux 3.10、macOS 3.9.6 均 18/18 + 10/10。
+      - kind: defect_found
+        ref: scripts/check_staged_content.py
+        note: |
+          对抗集 H08 抓获：`  "password": "hunter2xyz-example",` ——带引号的 JSON key
+          完全绕过。正则的 [A-Za-z0-9_.-]* 匹配不到 `"`，导致 password 后面的
+          `":` 让整个模式失败。而 JSON 配置是最常见的凭证载体之一。
+          修 key 两侧允许 ['"]? 后，又暴露出新误报 `{"password": PWD}` （常量引用），
+          补"全大写标识符"放行规则时必须写 (?-i:...)，否则外层 (?ix) 会放行任何
+          标识符包括真口令。修完全量回归命中数与放宽前一致（4 条，均在 gitignore 内）。
+      - kind: defect_found
+        ref: docs/experiments/rsi-delivery-benchmark/runs/2026-11-20-j3b-4rounds
+        note: 拦截 3 次，其中 2 次是 MD5( 哈希描述被误判；假阳性率 2/3
+    story: gov.S05.07
+    change: null
+    revision: rev-2026-07-20-gate-hardening-budget-secrets-ci
+    next: 未覆盖 base64 / 分片拼接的凭证——规则本就抓不到，属"不防"清单；若要覆盖需引入熵检测（会显著抬高误报率）
+
+  - id: cap.evidence.commit
+    name: commit 协议校验
+    layer: C
+    fr: [gov.FR05, gov.FR13]
+    current: M3
+    target: M3
+    mechanism: []
+    checks: [scripts/check_commit_message.py, scripts/check_commit_bypass.py]
+    rules: [tool.binding.r1]
+    evidence:
+      - kind: bypass_attempt
+        ref: scripts/check_commit_bypass.py
+        attempts: 14
+        rejected: 14
+        note: |
+          14 条系统性绕过全部被拒、9 条易误报形态全部放行（gov.S05.08）：
+          无 trailer / 只有正文 / 三行全 none / Story 缺项目前缀 / 小写 /
+          段号非两位 / 下划线分隔 / 缺段号 / 碰 code_paths 但 Change: none /
+          **重复 Story 行（第二个伪造）** / **Change: NULL** / **Change: -** /
+          **正文中间出现 Story: 行** / **Story 写在 subject 里**。
+          后五条是本轮扩面后新抓到的（上一轮 9 条时全对、无缺陷）。
+          三平台一致：Windows 3.13 / Linux 3.10 / macOS 3.9.6 均 23/23。
+      - kind: destructive_test
+        ref: scripts/check_commit_message.py
+        note: |
+          按 git trailer 语义（最后一段连续 Key: Value 行）取搜索范围，
+          而不是全文搜 ^Story:——否则正文里抄一行别人的 trailer 就能凑齐。
+          历史 commit 回归：最近 5 个 PASS，两个早期无 trailer 的提交在改前也 FAIL。
+      - kind: executable
+        ref: scripts/check_commit_message.py
+    story: gov.S05.08
+    change: null
+    revision: rev-2026-11-20-commit-trailer-hardening
+    next: 已知边界——不校验 Story ID 是否真实存在（gov.S99.99 格式合法即过）；要补需扫 _bmad/gov/stories/，属 validate() 之外的职责
+
+  # ---------- D 知识层：经验如何变成基线 ----------
+  - id: cap.knowledge.promotion
+    name: Revision 晋升流程
+    layer: D
+    fr: [gov.FR11, gov.NFR03]
+    current: M2
+    target: M3
+    mechanism: [revisions/WORKFLOW.md]
+    checks: [scripts/check_progress_consistency.py, scripts/link_revision_to_commits.py]
+    rules: [tool.revisions.r1, tool.revisions.r5]
+    evidence:
+      - kind: destructive_test
+        ref: revisions/WORKFLOW.md
+        note: 35 条 revision 中已有多条完整走完 candidate→benchmarked→merged
+    story: null
+    change: null
+    revision: null
+    next: 统计"从 candidate 到 merged 的中位天数"，看门是否太重
+
+  - id: cap.knowledge.baseline
+    name: 变更工件不当基线
+    layer: D
+    fr: [gov.FR11]
+    current: M1
+    target: M2
+    mechanism: [AGENTS.md]
+    checks: []
+    rules: [tool.binding.r12]
+    evidence:
+      - kind: declared
+        ref: AGENTS.md
+    story: null
+    change: null
+    revision: rev-2026-11-19-rule-promotion-benchmark-gate
+    next: 无机器校验（读到 change 里的设计无法自动识别），只能靠 prompt
+
+  - id: cap.knowledge.health
+    name: 知识库健康自检
+    layer: D
+    fr: [gov.FR11]
+    current: M2
+    target: M3
+    mechanism: []
+    checks: [scripts/check_knowledge_health.py]
+    rules: []
+    evidence:
+      - kind: defect_found
+        ref: scripts/check_knowledge_health.py
+        note: 检出 orphan 目录、占位文本、rule_id 缺失、size 漂移
+    story: null
+    change: null
+    revision: null
+    next: 目前只报不拦；需决定哪些 finding 该阻断提交
+
+  - id: cap.knowledge.runtime
+    name: 运行时执行事实沉淀
+    layer: D
+    fr: [gov.FR12]
+    current: M1
+    target: M2
+    mechanism: [runtime-context.yaml]
+    checks: []
+    rules: [ops.runtime-context.r8, ops.runtime-context.r9]
+    evidence:
+      - kind: declared
+        ref: runtime-context.yaml
+    story: null
+    change: null
+    revision: rev-2026-11-19-<业务域>-ops-routine
+    next: 测"新会话是否会重复询问已在 runtime-context 里的事实"
+
+  # ---------- E 执行层：工具与门禁 ----------
+  - id: cap.exec.container-hygiene
+    name: 容器可写层与容器日志回收
+    layer: E
+    fr: [gov.FR12]
+    current: M2
+    target: M3
+    mechanism: [scripts/<业务域>_docker_gc.sh, /etc/cron.d/<业务域>-docker-gc]
+    checks: [scripts/<业务域>_docker_gc.sh]
+    rules: [ops.<业务域>.r34, ops.<业务域>.r35, ops.<业务域>.r36]
+    evidence:
+      - kind: defect_found
+        ref: revisions/2026-11-23-<业务域>-ops-container-gc/evidence/2026-11-23-prod-audit.md
+      - kind: destructive_test
+        ref: revisions/2026-11-23-<业务域>-ops-container-gc/evidence/2026-11-23-prod-audit.md
+    story: null
+    change: null
+    revision: rev-2026-11-23-<业务域>-ops-container-gc
+    next: 仓内副本已由 scripts/<业务域>_docker_gc.sh 承担（生产机为同源部署）；补「24 h 后容器 /tmp < 1 GB」的自动校验才可升 M3
+
+  - id: cap.exec.gates
+    name: 统一门禁入口
+    layer: E
+    fr: [gov.FR07]
+    current: M1
+    target: M2
+    mechanism: [scripts/install_governance_gates.py]
+    checks: [scripts/install_governance_gates.py]
+    rules: [tool.r7]
+    evidence:
+      - kind: executable
+        ref: scripts/install_governance_gates.py
+    story: null
+    change: null
+    revision: rev-2026-07-07-universal-deterministic-gates
+    next: 在无 .git 的裸目录实测一次优雅降级
+
+  - id: cap.exec.hooks
+    name: git / Cursor 确定性钩子
+    layer: E
+    fr: [gov.FR13]
+    current: M1
+    target: M2
+    mechanism: []
+    checks: [scripts/install_git_hooks.py, scripts/install_cursor_hooks.py]
+    rules: [tool.r6]
+    evidence:
+      - kind: executable
+        ref: scripts/install_git_hooks.py
+    story: null
+    change: null
+    revision: rev-2026-07-07-agent-runtime-compat
+    next: 统计被钩子拦下的真实提交数（现在没有计数）
+
+  - id: cap.exec.longtask
+    name: 长任务与资源护栏
+    layer: E
+    fr: [gov.FR07]
+    current: M1
+    target: M2
+    mechanism: [04-verification-policy.md]
+    checks: []
+    rules: []
+    evidence:
+      - kind: declared
+        ref: 04-verification-policy.md
+    story: null
+    change: null
+    revision: rev-2026-07-07-longtask-and-resource-guardrails
+    next: 把"后台运行 + 不轮询"固化成可检查的清单
+
+  - id: cap.exec.observability-integrity
+    name: 观测口径完整性（指标键名锚定、产出根全覆盖、日志存活前置）
+    layer: E
+    fr: [gov.FR10, gov.FR12]
+    current: M1
+    target: M2
+    mechanism: []
+    checks: [scripts/<业务域>_ops_check.py]
+    rules: [ops.<业务域>.r38, ops.<业务域>.r39, ops.<业务域>.r40]
+    evidence:
+      - kind: defect_found
+        ref: revisions/2026-11-24-<业务域>-ops-capacity-accounting/evidence/巡检报告-2026-11-24.md
+    story: gov.S04.34
+    change: null
+    revision: rev-2026-11-24-<业务域>-ops-capacity-accounting
+    next: 三项判据已落规则但未进巡检脚本；M2 需在脚本内实现结构化匹配与附件通道检查，并用真实产物验证不再误报
+
+  - id: cap.exec.exposure-evidence
+    name: 暴露面实证分级（端口可达 → 外部连接占用 → 请求级交互）
+    layer: E
+    fr: [gov.FR10, gov.FR12]
+    current: M1
+    target: M2
+    mechanism: []
+    checks: [scripts/<业务域>_ops_check.py]
+    rules: [ops.<业务域>.r42]
+    evidence:
+      - kind: defect_found
+        ref: revisions/2026-11-25-<业务域>-ops-idle-exposure/evidence/巡检报告-2026-11-25.md
+        note: |
+          8000 端口无鉴权连续 6 天未收敛（11-20 首次确认，11-25 复查仍 0 个鉴权装饰器）。
+          本轮新增实证：36 条境外 IP 的 ESTAB 空闲长连接，0s/+30s/+60s 三次采样恒定为 36，
+          排除短连接扫描；而 api_server.log 33 KB 内无任何外部 IP 请求行 → 只能判到连接层占用。
+          两个结论并存正是 r42 要固化的形态：不升格（宣称数据泄露）也不销案（日志干净即无风险）。
+    story: gov.S04.35
+    change: null
+    revision: rev-2026-11-25-<业务域>-ops-idle-exposure
+    next: 判据尚未进巡检脚本（当前为人工探针）；M2 需把「ESTAB 计数 + 日志请求行匹配」做成脚本项，并用「有交互/无交互」两类真实样本各验一次
+
+  - id: cap.exec.hygiene
+    name: 工作树卫生归因
+    layer: E
+    fr: [gov.FR13]
+    current: M1
+    target: M2
+    mechanism: []
+    checks: [scripts/check_worktree_hygiene.py]
+    rules: [ops.housekeeping.r10, ops.housekeeping.r11]
+    evidence:
+      - kind: executable
+        ref: scripts/check_worktree_hygiene.py
+    story: gov.S04.28
+    change: null
+    revision: null
+    next: 区分 generated vs real churn 的误判率未评估；入库边界靠 .gitignore 前置
+
+  - id: cap.exec.vault
+    name: 凭据保险箱（加密静态存储 + 读取审计）
+    layer: E
+    fr: [gov.FR13]
+    current: M3
+    target: M3
+    mechanism: [scripts/gov_vault.py]
+    checks: [scripts/gov_vault.py, scripts/gov_vault_selftest.py, scripts/check_vault_bypass.py]
+    rules: [tool.r14]
+    evidence:
+      - kind: bypass_attempt
+        ref: scripts/check_vault_bypass.py
+        attempts: 15
+        rejected: 15
+        note: |
+          15 条按攻击面枚举的绕过尝试，全部被拒且无副作用（gov.S05.06）：
+          审计侧 A1-A4（让 local/ 不可写后取/写凭据）、密文侧 B1-B3
+          （篡改/换名/截断）、密钥侧 B4（改 salt）、口令侧 C1-C2、
+          记账侧 D1-D2（缺 purpose / 空白 purpose）、破坏侧 E1-E2
+          （rm 无 --yes / 空内容覆盖）、输入侧 F1。
+          三平台：Windows 3.13 = 15/15、macOS 3.9.6 = 15/15、
+          Linux root 3.10 = 13/13（A3/A4 在 root 下不适用——root 不受
+          文件权限约束，该攻击面不存在，标为不适用而非算作通过）。
+          不计入统计的三类见脚本 NOT_DEFENDED：
+          持 passphrase 者 / 内存取证 / 伪造 purpose 后正常取用。
+      - kind: destructive_test
+        ref: docs/governance/VAULT.md
+        note: |
+          15 组边界自测：缺 purpose 拒绝(exit 2)、错误口令(exit 4)、vault.bin
+          单字节篡改(exit 4)、rm 无 --yes 拒绝、审计无需口令可读、
+          CRLF PEM 往返字节一致（第一版此处为真 bug，读数时换行归一化损坏 PEM）
+      - kind: destructive_test
+        ref: scripts/gov_vault_selftest.py
+        note: |
+          跨平台自测 66 项，三平台各跑一遍全绿：
+          Windows 11 / Python 3.13.14、Linux 6.8 / Python 3.10.12、
+          macOS 14.8.8 (Intel) / Python 3.9.6（系统自带版本，正是会被
+          3.10+ API 打崩的环境）。
+          覆盖：密文换名解密失败(exit 4)、审计不可写时 get 拒绝(exit 5)、
+          8 路并发 put 无丢条目、二进制 .p12 往返 sha256 一致、
+          v1 单文件库迁移、Unix 0700/0600 与 Windows ACL 实测。
+          跨平台互操作四向全过（Linux↔Windows、macOS↔Windows），
+          中文条目名 / ümlaut / 二进制 / PEM 122 字节零差异。
+      - kind: defect_found
+        ref: scripts/gov_vault.py
+        note: |
+          绕过测试第一轮 13/15，抓到两处"约束在异常路径没贯彻到底"：
+          A2 — put 在审计不可写时返回 exit 1（FileLock 的 mkdir 失败裸抛
+          OSError），而 get 正确返回 5，同一约束在两个命令上行为不一致；
+          A4 — 审计写不进去时凭据已被改（save_entry → audit 的顺序导致），
+          形成"改了但日志查不到"。均已修：mkdir/PermissionError 转
+          VaultError(5)，put/rm 在审计失败时回滚。
+      - kind: defect_found
+        ref: <本机运维脚本>
+        note: |
+          该脚本曾硬编码明文 SSH 口令，是本次建箱的直接触发点。
+          第二轮移植性改造又暴露四个换平台必崩的问题：Path.write_text(newline=)
+          是 3.10+（macOS 自带 3.9 直接 TypeError）、目录未 chmod 700 导致
+          audit.log 明文可读、无写锁导致并发 put 丢更新、read_bytes().decode()
+          让 .p12 直接崩。Windows 侧另有一个：icacls /T 递归把 (OI)(CI) 套到
+          文件上会产出空 DACL（锁文件变成谁都打不开的裸文件）。
+    story: gov.S04.29
+    change: null
+    revision: rev-2026-11-20-credential-vault
+    next: 绕过集未覆盖"多端口令不一致"与"git 二进制冲突"（那是运维场景不是攻击面）；若将来接入网络分发需补传输侧；macOS 离线 wheel 安装流程仍待脚本化（系统 pip 21.2.4 拿不到 wheel、需一并装 cffi）
+
+  - id: cap.exec.portable
+    name: 地基门禁可移植性
+    layer: E
+    fr: [gov.NFR01]
+    current: M2
+    target: M2
+    mechanism: [scripts/_governance_yaml.py, scripts/check_gates_portability.py]
+    checks: [scripts/check_gates_portability.py]
+    rules: []
+    evidence:
+      - kind: declared
+        ref: scripts/_governance_yaml.py
+      - kind: destructive_test
+        ref: scripts/check_gates_portability.py
+        note: |
+          13 个门禁脚本 × 4 种降级环境（base / nogit / noyaml / ro）矩阵，
+          三平台各 52 项全绿：Windows 11 + Python 3.13、Linux 24.04 + 3.10
+          （pyyaml 5.4.1）、macOS 14.8.8 + 系统 Python 3.9.6（**无 pyyaml**）。
+          判定标准是"退出码 ∈ {0,1} 且无 Traceback"，不是"跑出 0"。
+          反向验证（证明判据有区分度）：把 check_knowledge_health.py 的兜底
+          改回硬依赖的 sys.exit(2)，--env noyaml 立即报
+          "启动失败 → 退出码 2：ERROR: pyyaml not installed."；恢复后回到 0。
+      - kind: defect_found
+        ref: scripts/check_knowledge_health.py
+        note: |
+          曾硬依赖 pyyaml 且 ImportError 时 sys.exit(2)。新 macOS（系统 Python
+          3.9.6）、精简容器、多数 CI 镜像都默认没有 pyyaml——在那类机器上
+          整套知识库检查等于不存在，且崩在启动阶段、无人察觉。
+          已改为回退仓库自带的 MiniYaml（scripts/_governance_yaml.py）。
+    story: gov.S05.05
+    change: null
+    revision: null
+    next: M3 对本能力不适用（可移植性没有"对照效应量"语义）；待补的是更强模拟——真实 ACL 拒绝、只读挂载、缺少 git 二进制（当前只覆盖 chmod 语义与无 .git 目录）
+
+  # ---------- F 协作层：AI 与人的契约 ----------
+  - id: cap.collab.authority
+    name: 权威优先级与冲突裁决
+    layer: F
+    fr: [gov.FR01]
+    current: M1
+    target: M3
+    mechanism: [AGENTS.md]
+    checks: [scripts/check_declaration_fact.py]
+    rules: []
+    evidence:
+      - kind: declared
+        ref: AGENTS.md
+    story: null
+    change: null
+    revision: null
+    next: 造一次"两个文档互相冲突"的实验，看 agent 是否按优先级裁决
+
+  - id: cap.collab.output
+    name: AI 产出质量契约
+    layer: F
+    fr: [gov.FR14]
+    current: M3
+    target: M4
+    mechanism: [05-ai-collaboration-policy.md]
+    checks: []
+    rules: []
+    evidence:
+      - kind: effect_size
+        ref: docs/experiments/rsi-realworld/SUMMARY-20261119-five-tasks.md
+        note: T03 追溯率 0.602→0.917 (t=+2.11)；R01 无支撑密度 −38.6% (t=−2.31)
+      - kind: effect_size
+        ref: docs/experiments/rsi-delivery-benchmark/tasks/J3-code-audit/SMOKE2-20261119.md
+        note: precondition 覆盖 0→100%，但 precision 0.25→0.125（形式改善、判断未改善）
+      - kind: defect_found
+        ref: docs/experiments/rsi-delivery-benchmark/tasks/J3b-filemanage-plugin/VARIANCE-20261120.md
+        note: 条款压制不确定(t=−2.06)、数字规避(t=−2.32)、无成本上限(+80%)
+      - kind: effect_size
+        ref: docs/experiments/rsi-delivery-benchmark/runs/2026-11-20-j3b-<配对实验>/summary.md
+        note: |
+          §8.6 配对实验，实际 n=21（预注册 n=25，6 臂因后端 502 缺失）。
+          主口径（行号 738-752 单独成条）base 0.619 → gov 1.000，
+          McNemar b=8 c=0 p=0.0078；敏感性口径（文本提及也算）p=0.1250。
+          两口径 base_only 均为 0（21 组零反例）。
+          口径跨越 0.05 阈值，故定级为方向性证据、不据此升 M4。
+    story: gov.S04.25
+    change: null
+    revision: rev-2026-11-20-shared-root-cause-clause
+    next: 配对实验已完成判分（n=21，方向性证据：主口径 p=0.0078、敏感性 p=0.1250，零反例）。补足 n=25 需整体重跑 50 臂（原后端 <推理端点> 已 100% 502，换模型等于换实验）；M4 仍缺第二个独立任务的确证性复现
+
+  - id: cap.collab.orch
+    name: 编排治理底线
+    layer: F
+    fr: [gov.FR14]
+    current: M0
+    target: M2
+    mechanism: [domains/orchestration]
+    checks: []
+    rules: [proj.orch.r1, proj.orch.r2, proj.orch.r3, proj.orch.r4, proj.orch.r5, proj.orch.r6, proj.orch.r7, proj.orch.r8]
+    evidence:
+      - kind: declared
+        ref: domains/orchestration/_summary.yaml
+    story: null
+    change: null
+    revision: rev-2026-11-18-governed-orchestration-and-evidence
+    next: 8 条规则无任何执行面；要么接进门禁，要么降级为参考
+
+# ---------- 明确暂缓项：记录"决定不做"，避免以后重复讨论 ----------
+deferred:
+  - id: cap.knowledge.hotfix
+    name: 治理热修 TTL 通道
+    fr: [gov.FR08]
+    reason: 至今未出现"必须先改再补流程"的紧急场景；引入会给自己开后门
+    trigger: 出现首次"来不及走 revision 就得改基线"的真实事件时重新评估
+    decided_at: 2026-11-19
+    decided_by: agent + user
+  - id: cap.collab.toolgate
+    name: Tool Gate 七字段声明
+    fr: [gov.FR14]
+    reason: 单 agent 场景下危险命令拦截已够；多 agent 并行写同一产物时才需要
+    trigger: 出现多 agent 并行修改同一仓库的实际需求
+    decided_at: 2026-11-19
+    decided_by: agent + user
+  - id: cap.orch.workpackage
+    name: 工作包分类 DAG / fan-in
+    fr: [gov.FR14]
+    reason: 本仓库是文档与流程治理框架，不是编排运行时；引入会让 AGENTS.md 从路由表膨胀成调度器规范
+    trigger: 治理对象从"单 agent 项目"扩展到"多 agent 协作体"
+    decided_at: 2026-11-19
+    decided_by: agent + user

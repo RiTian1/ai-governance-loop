@@ -1,0 +1,8 @@
+evidence/ 用于存放本次 revision 的验证证据：
+
+  health-report-before.md           # 改动前的 health 报告
+  health-report-after.md            # 改动后的 health 报告
+  progress-matrix-before.md         # 改动前的 progress matrix
+  progress-matrix-after.md          # 改动后的 progress matrix
+  commits.txt                       # 由 link_revision_to_commits.py 自动 fill
+  其它实验日志、回归对比等

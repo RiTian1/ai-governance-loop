@@ -1,0 +1,605 @@
+# 候选修订索引（机器可读）
+# Schema: foundations/progress-traceability-and-binding.md §2 / §3.3
+# 工作流: revisions/WORKFLOW.md
+#
+# 字段:
+#   id              规范 revision_id（rev-<YYYY-MM-DD>-<slug>），与 meta.yaml/frontmatter 中的 revision_id 必须一致
+#   title           一句话标题
+#   status          candidate | accepted | rejected | implementing | merged | archived
+#   path            相对路径（status=merged/archived 必须在 revisions/archive/<year>/）
+#   linked_stories  关联 BMAD Story id 列表（可空）
+#   linked_changes  关联 OpenSpec change id 列表（可空）
+#   introduces_rules 本 revision 引入的 rule_id（与 _summary.yaml 中 introduced_by 字段反向呼应）
+#   trigger_summary 触发原因（一句话）
+
+revisions:
+  - id: rev-2026-11-20-commit-trailer-hardening
+    title: commit 校验的 trailer 语义加固（三个可绕过点）
+    status: benchmarked
+    path: revisions/2026-11-20-commit-trailer-hardening/
+    linked_stories: []
+    linked_changes: []
+    introduces_rules: []
+    trigger_summary: |
+      上一轮 9 条攻击面全对、无缺陷，判定"覆盖面偏窄"只升 M2。扩到 14 条后
+      一轮抓出三个可绕过点：正文里任意 Story: 行都算 trailer；重复 Story 行
+      时只取第一个；Change: NULL / - 被当成非 none。按 git trailer 语义
+      （最后一段连续 Key: Value）取范围后三平台 23/23。
+      证明：测试集规模本身就是判据的一部分。
+  - id: rev-2026-11-20-gate-bypass-suites
+    title: 内容闸与 commit 校验的对抗测试集
+    status: benchmarked
+    path: revisions/2026-11-20-gate-bypass-suites/
+    linked_stories: []
+    linked_changes: []
+    introduces_rules: []
+    trigger_summary: |
+      内容闸的 next 一直写着「降假阳性，否则会被绕过」。做成双向对抗集：
+      18 条必抓 + 10 条必放。第一轮 16/18，H08 抓到真缺陷——带引号的
+      JSON key `"password": "..."` 完全绕过正则。修完又暴露新误报
+      `{"password": PWD}` （常量引用），补 (?-i:[A-Z][A-Z0-9_]*) 放行。
+      commit 校验 15/15 全对无缺陷，只升 M2 不升 M3（覆盖面不够系统性）。
+  - id: rev-2026-11-20-vault-bypass
+    title: 保险箱绕过测试集与两处约束漏洞修复
+    status: benchmarked
+    path: revisions/2026-11-20-vault-bypass/
+    linked_stories: []
+    linked_changes: []
+    introduces_rules: []
+    trigger_summary: |
+      cap.exec.vault 停在 M2 的证据是"曾经漏过一次"，但 M3 要回答的是
+      "压力下防线是否成立"。按攻击面枚举 15 条绕过尝试，第一轮 13/15，
+      抓到两处约束在异常路径没贯彻到底：put 在审计不可写时裸抛 traceback
+      （get 却正确地 exit 5），以及审计失败时凭据已落盘（"改了但没留痕"）。
+      修复后三平台全拒：Win 15/15、macOS 15/15、Linux root 13/13。
+  - id: rev-2026-11-20-m3-bypass-evidence
+    title: M3 判据扩展——约束型能力用 bypass_attempt 替代 effect_size
+    status: benchmarked
+    path: revisions/2026-11-20-m3-bypass-evidence/
+    linked_stories: []
+    linked_changes: []
+    introduces_rules: []
+    trigger_summary: |
+      M3 原本只认 effect_size，而约束型能力（保险箱、内容闸、commit 校验）
+      的价值是"挡住不该发生的事"，产不出对照效应量 → target 挂着 M3 却永远
+      够不到。加第二条路径：attempts≥8 且 rejected==attempts 的绕过测试。
+      M4 不放宽；判据自测 7 组，30 个能力判定结果回归不变。
+  - id: rev-2026-11-20-gates-portability
+    title: 门禁可移植性（降级环境矩阵 + 去掉 pyyaml 硬依赖）
+    status: benchmarked
+    path: revisions/2026-11-20-gates-portability/
+    linked_stories: []
+    linked_changes: []
+    introduces_rules: []
+    trigger_summary: |
+      cap.exec.portable 的 next 挂了很久：「在无 pyyaml、无 .git 的容器里
+      实测 exit 0/1（绝不 2）」。实测发现 check_knowledge_health.py 仍硬依赖
+      pyyaml、ImportError 时 sys.exit(2)——新 macOS 与精简容器上整套知识库
+      检查等于不存在。补四环境矩阵自测并修掉依赖。
+  - id: rev-2026-11-20-credential-vault
+    title: 凭据保险箱 gov_vault（加密静态存储 + 取用审计）
+    status: benchmarked
+    path: revisions/2026-11-20-credential-vault/
+    linked_stories: []
+    linked_changes: []
+    introduces_rules: [tool.r14]
+    trigger_summary: |
+      <本机运维脚本> 硬编码明文 SSH 口令，只差一次 git add -A 就进历史。
+      建统一入口：AES-256-GCM 加密 + 取用必留审计 + 口令不落盘，
+      并写成 tool.r14 与 AGENTS.md 的入口说明。
+  - id: rev-2026-11-20-repo-ingest-boundary
+    title: 仓库入库边界：大体积归档、外部快照与含凭据脚本
+    status: candidate
+    path: revisions/2026-11-20-repo-ingest-boundary/
+    linked_stories: []
+    linked_changes: []
+    introduces_rules: []
+    trigger_summary: |
+      工作区存在 73MB 归档、含嵌套 .git 的外部快照、以及硬编码明文 SSH 口令的
+      本机脚本。前两类靠 .gitignore 前置拦截，第三类不入库。
+  - id: rev-2026-11-20-capability-map-four-layer
+    title: 四端绑定补全（PRD FR 层）与治理能力地图
+    status: benchmarked
+    path: revisions/2026-11-20-capability-map-four-layer/
+    linked_stories: []
+    linked_changes: [gov.C04.26]
+    introduces_rules: [tool.r13]
+    trigger_summary: |
+      foundations 声明四端绑定，实际只接三端：prd.md 不存在、prd_refs 全空、
+      FR_ID_RE 从未使用、epic_id 全悬空。补 PRD 层 + 29 能力地图 + 校验器，
+      红转绿（9→0 error）作为回归证据。
+  - id: rev-2026-11-20-shared-root-cause-clause
+    title: 共享根因必须单独成条（05 §8.6）
+    status: candidate
+    path: revisions/2026-11-20-shared-root-cause-clause/
+    linked_stories: []
+    linked_changes: []
+    introduces_rules: []
+    trigger_summary: |
+      J3b 四轮实测：recall 两极化 100% 由"会不会把公共根因单独成条"决定（2/4），
+      三条明显 L1 四轮全中无区分度。据此在 05 §8 增 8.6，并设计 n=25 配对实验。
+  - id: rev-2026-11-19-ai-output-quality-clauses
+    title: AI 产出质量条款（不确定显式、数字不许省、按源类型分支、成本上限）
+    status: benchmarked
+    path: revisions/2026-11-19-ai-output-quality-clauses/
+    linked_stories: []
+    linked_changes: []
+    introduces_rules: []
+    trigger_summary: |
+      RSI 五任务实验暴露四条与任务类型无关的条款缺陷：压制不确定表达(T02 t=-2.06)、
+      数字条款导致规避(T03 t=-2.32)、引用要求不区分源类型(T03 +52% vs T04 -42%)、
+      无成本上限(M01 input +80%)。写入 05-ai-collaboration-policy.md §8，不需新实验。
+  - id: rev-2026-11-19-index-freshness-gate
+    title: 索引新鲜度检查（00-index.yaml 与 domains/ 结构一致）
+    status: benchmarked
+    path: revisions/2026-11-19-index-freshness-gate/
+    linked_stories: []
+    linked_changes: []
+    introduces_rules:
+      - tool.r12
+    trigger_summary: |
+      00-index.yaml 是 context_loader 的唯一装配依据。实测 L1 只登记 4 条、
+      9 个域目录完全未登记、4 条登记指向已迁移的 .md（dangling）。索引里没有的域
+      AI 读不到，而 orphan 检查只查"目录有没有三件套"，查不出"有没有被索引收录"。
+      新增 check_index_freshness.py 做双向比对，并修好数据（errors 13 → 0）。
+  - id: rev-2026-11-19-declaration-fact-consistency
+    title: 声明-事实一致性检查（状态机正典唯一）
+    status: benchmarked
+    path: revisions/2026-11-19-declaration-fact-consistency/
+    linked_stories: []
+    linked_changes: []
+    introduces_rules:
+      - tool.r11
+    trigger_summary: |
+      治理文档特有的失败模式：文档自我漂移。加 benchmarked 状态时改完 WORKFLOW.md
+      后仍有 4 处写旧状态机，全靠人工 grep 找齐。新增 check_declaration_fact.py 做
+      四类检查（规则号/路径/脚本/状态机），状态机以 WORKFLOW.md 为唯一正典，
+      副本与之比对。第一版用"所有文档并集"作声明源，实测改坏正典仍报 0 error，已废弃。
+  - id: rev-2026-11-19-rule-promotion-benchmark-gate
+    title: 规则晋升引入评测门（benchmarked 态）与 change 工件边界
+    status: benchmarked
+    path: revisions/2026-11-19-rule-promotion-benchmark-gate/
+    linked_stories: []
+    linked_changes: []
+    introduces_rules:
+      - tool.revisions.r6
+      - tool.binding.r12
+    trigger_summary: |
+      审阅 项目A 运行时给自家 agent 的治理体系后发现两处能力缺口：
+      (1) 母版仓 revision 状态机 merged 前只要求"有验证证据"，不要求证明规则本身有效；
+      项目A 的 promotion gate 含 benchmarked 态且 Evaluator 须在 fresh context 跑 benchmark。
+      (2) 项目A 明确禁止把 change 目录的详细设计当项目级基线，母版仓只有分级表没有反向禁止。
+      本次为 r5 状态机插入 benchmarked 中间态（modifies），新增 tool.revisions.r6（评测证据要求）
+      与 tool.binding.r12（change 工件不是基线）。
+      不引入 项目A 的运维 loop、工作包 DAG、fan-in、六能力平面（理由见 proposal §5）。
+  - id: rev-2026-11-18-governed-orchestration-and-evidence
+    title: 治理编排域（借 evolver 的统计 / AutoResearch 的证据）
+    status: candidate
+    path: revisions/2026-11-18-governed-orchestration-and-evidence/
+    linked_stories: []
+    linked_changes: []
+    introduces_rules: [proj.orch.r1, proj.orch.r2, proj.orch.r3, proj.orch.r4, proj.orch.r5, proj.orch.r6, proj.orch.r7, proj.orch.r8]
+    trigger_summary: |
+      两种相反方法（统计/证据）收敛到同一铁律；新增编排域收敛证据闭环与晋升淘汰。
+  - id: rev-2026-11-18-ai-code-review-governance
+    title: AI 辅助代码评审的责任分层（分层校验 / 上下文对齐 / 签字担责）
+    status: candidate
+    path: revisions/2026-11-18-ai-code-review-governance/
+    linked_stories: []
+    linked_changes: []
+    introduces_rules: [review.r1, review.r2, review.r3, review.r4, review.r5, review.r6, review.r7, review.r8, review.r9, review.r10, review.r11]
+    trigger_summary: |
+      AI 参与编码后产能/上下文/责任三个不对称同时出现；既有验证政策只回答"跑没跑过"，
+      不含"谁看了、看懂到什么程度、谁担责"。本 revision 新增 review 域与可机检门禁。
+  - id: rev-2026-11-04-nas-gitlab-project-repositories
+    title: 为项目工作流索引 NAS GitLab 建仓与迁移说明
+    status: candidate
+    path: revisions/2026-11-04-nas-gitlab-project-repositories/
+    linked_stories: []
+    linked_changes: []
+    introduces_rules: []
+    trigger_summary: 项目工作流需要从共同入口按需发现 NAS GitLab 建仓、连接和迁移操作参考
+
+  - id: rev-2026-10-28-agent-rsi-engineering
+    title: 长程 Agent RSI 工程试点
+    status: candidate
+    path: revisions/2026-10-28-agent-rsi-engineering/
+    linked_stories: []
+    linked_changes: []
+    introduces_rules: []
+    trigger_summary: 长程任务压缩恢复与候选自改进缺少统一可验证入口
+
+  - id: rev-2026-10-27-nas-project-materials
+    title: 统一 NAS 开源物料与项目发版产物目录
+    status: candidate
+    path: revisions/2026-10-27-nas-project-materials/
+    linked_stories: []
+    linked_changes: []
+    introduces_rules: [projects.r5]
+    trigger_summary: 固态区建立 open-src 与 project-out 统一结构；旧包按来源和状态逐件核验后迁移
+
+  - id: rev-2026-10-07-release-records-and-csc-regression
+    title: CSC 回归与发版记录历史来源（由现存治理材料重建）
+    status: archived
+    trigger_summary: |
+      保留现有规则中的历史来源 ID。中央副本根据 2026-10-07 的 CSC 回归索引、发布摘要和
+      bug 记录重建出处说明；原始 revision 正文与提交未恢复，详细边界见快照说明。
+
+  - id: rev-2026-10-22-governance-authority-bootstrap
+    title: 汇总现有项目治理与 DSL 快照并建立 NAS GitLab 唯一权威入口
+    status: candidate
+    path: revisions/2026-10-22-governance-authority-bootstrap/
+    linked_stories: []
+    linked_changes: []
+    introduces_rules: []
+    trigger_summary: |
+      为 NAS 私有 GitLab 的治理权威仓核对 Nexus、Sentinel 与既有 operations 材料；保留
+      项目特化规则和 DSL/AST 恢复快照，区分中央通用 revision 与项目来源台账，并建立跨机器 Git 工作入口。
+    linked_stories: []
+    linked_changes: []
+    introduces_rules:
+      - ops.release-records.r1
+      - ops.release-records.r2
+      - ops.release-records.r3
+    path: revisions/archive/2026/legacy-release-provenance/2026-10-07-release-records-and-csc-regression.md
+    trigger_summary: |
+      保留现有规则中的历史来源 ID。中央副本根据 2026-10-07 的 CSC 回归索引、发布摘要和
+      bug 记录重建出处说明；原始 revision 正文与提交未恢复，详细边界见快照 README。
+
+  - id: rev-2026-10-16-pentest-run-governance
+    title: 渗透跑批治理化——SB 编排下沉为可替换执行器，治理层持有口径/约束/记录/索引（含引擎与工具技能权威台账）
+    status: candidate
+    path: revisions/2026-10-16-pentest-run-governance/
+    linked_stories: []
+    linked_changes: []
+    introduces_rules: []
+    trigger_summary: |
+      用户 2026-10-16 问：light 用 governance 手法做全线约束与沉淀记录、构建索引供回归/分析/总结/传递、
+      回避 SB 编排是否可行；并要求 governance 内置分类好 artex 等权威工具/技能/方法论。
+      落地判断：口径/约束/记录/索引由治理层持有，执行器（SB/Artex/Pi）下沉为契约的可替换实现；
+      不回避执行器，只打破黑箱唯一性与三个已确认失效子环节（massdns 批量瘫痪、CT 通配命名盲区、
+      收尾失败连带删容器）。关键前置发现：phased_plus 已有覆盖矩阵/scope audit/shared INDEX，
+      只是写在会被删除的容器里 ⇒ 移植成本为「外提 + 索引化 + 加门禁」。
+      附硬门 scripts/check_rp_run_records.py（双数组 / 爆破存活 / C-H 双分区 / 引擎注册）。
+
+  - id: rev-2026-10-13-sb-light-engine-integrity
+    title: SB Light 引擎产出完整性 + 权威来源归档——末轮未完成不得静默关流（P0④）+ 高价值目标清单移植（P0③）+ 无 git 三源快照归档
+    status: implementing
+    path: revisions/2026-10-13-sb-light-engine-integrity/
+    linked_stories: []
+    linked_changes: []
+    introduces_rules: []
+    trigger_summary: |
+      用户 2026-10-13 指派：模型不动（仍走 flash），其余按复盘 §4 落地；把 <internal-workdir> 下无 git 的
+      pi/sb/artex 三源打包纯源码+套件快照（改前改后各一份）；更新权威来源并部署本机；用给定 15 条
+      SOCKS5 跑一个目标回归。落地 P0①（新出口池 15/15 健康）、P0③（phased_plus 补 deep-chain 节）、
+      P0④（流无 turn.completed 即 EOF 不得判成功，复用 recoverable 签名接 auto-resume + 失败路径报告抢救）；
+      排除 P0②。三源零改动只归档；真源离线包 onefile + app 镜像已回写新二进制。
+
+  - id: rev-2026-10-12-sentinel-guangxi-ops-baseline
+    title: 建立环境基线子域（ops.environments）并落首个现场——sentinel 广西环境运维基线
+    status: accepted
+    path: revisions/2026-10-12-sentinel-guangxi-ops-baseline/
+    linked_stories: []
+    linked_changes: []
+    introduces_rules:
+      - ops.environments.r1
+      - ops.environments.r2
+      - ops.environments.r3
+      - ops.environments.r4
+      - ops.environments.sentinel-guangxi.r1
+      - ops.environments.sentinel-guangxi.r2
+      - ops.environments.sentinel-guangxi.r3
+      - ops.environments.sentinel-guangxi.r4
+      - ops.environments.sentinel-guangxi.r5
+      - projects.sentinel.r3
+    trigger_summary: |
+      用户要求「把广西环境运维基线加入到 sentinel 项目的运维域中」。勘察发现两处缺口：
+      ① 结构层——operations 域的 runtime-context 管「需要什么」、runbook 管「怎么做」、
+      release-records 管「改了什么」，唯独缺「某个环境现在是什么样」，而这是排障与
+      上线前确认现场态时最常查的；② 内容层——projects/sentinel/index.md §4 把「现场运维事实」
+      指向根 runtime-context.yaml 的 guangxi-47，但该根文件描述的是母版仓自身 loops，
+      全仓 guangxi-47 只存在于公司同步包的 secrets 目录与 INDEX.md，即项目轴指向了一个
+      本仓不存在的落点。实施：新建 domains/operations/environments/ L2（环境基线六段骨架）
+      + sentinel-guangxi/ L3（现场基线，基于 2026-10-12 实机侦察：7 容器、compose scopesentry、
+      Mongo 127 集合/92.2 万文档、唯一通路 selfpjt 隧道、6 条已知坑），4+5+1 条规则，
+      并修正项目叶的失效指向。
+
+  - id: rev-2026-10-12-register-company-sync-projects
+    title: 把公司治理基线同步包里的 5 个项目登记进项目轴（registry_only）
+    status: accepted
+    path: revisions/2026-10-12-register-company-sync-projects/
+    linked_stories: []
+    linked_changes: []
+    introduces_rules:
+      - projects.r4
+      - projects.deepfake.r1
+      - projects.fake-app-detection.r1
+      - projects.social-media-oinst.r1
+      - projects.aidr-ai-base.r1
+      - projects.aidr-ai-base.r2
+      - projects.cyberstrikeai.r1
+      - projects.cyberstrikeai.r2
+    trigger_summary: |
+      上一修订建项目轴时只登记了本机有运维事实的三个项目。公司同步包 other-ai-dev/ 下另有 5 个
+      项目（deepfake / fake-app-detection / social-media-oinst / aidr-ai-base / CyberStrikeAI）
+      本机无运维事实，用户答复「合并补充到本机」→ 按同一 DSL 登记为项目叶，全部 registry_only。
+      新增 projects.r4 固化「外部同步包登记必须标 registry_only 且写明本机不持有真源」。
+      顺带纠正 projects/index.md 新增项目步骤里 children 的错误位置（权威在 projects/_index.yaml）。
+
+  - id: rev-2026-10-12-project-and-business-reference-axes
+    title: 补两条显式轴——项目轴 projects/ 与业务参考轴 business-references/（CSC 从 domains/ 迁入）
+    status: accepted
+    path: revisions/2026-10-12-project-and-business-reference-axes/
+    linked_stories: []
+    linked_changes: []
+    introduces_rules:
+      - projects.r1
+      - projects.r2
+      - projects.r3
+      - projects.someapp.r1
+      - projects.someapp.r2
+      - projects.<采集项目>.r1
+      - projects.<采集项目>.r2
+      - projects.<业务域>-crawler.r1
+      - business-references.r1
+      - business-references.r2
+      - business-references.r3
+    trigger_summary: |
+      用户审计：运维域读不出项目归属，问「不同 project 怎么区分」。勘察确认基线没有项目维——
+      domains/ 是关切轴，项目身份散在采用层 project-governance.yaml、执行层 runtime-context.yaml
+      与事实层 lab/*.md 散文。用户决策：建 project 目录；CSC 属「业务参考」而非项目，与项目同级，
+      但一份业务参考可作用于多个项目（当前 someapp 与 <采集项目>），故业务参考 DSL 带多值
+      related_projects。实施：新建顶层树 projects/ 与 business-references/（三件套 + 每项一叶），
+      domains/csc-operations/ 迁入 business-references/csc-operations/（domain id 不变），
+      门禁扫描树由 domains/ 单树扩为三树，全基线路径引用改指新位置。
+
+  - id: rev-2026-03-25-bootstrap-adoption-layer
+    title: 母版初始化与采用层
+    status: merged
+    path: revisions/archive/2026/2026-03-25-bootstrap-adoption-layer.md
+    linked_stories: []
+    linked_changes: []
+    introduces_rules: []
+    trigger_summary: 新项目缺少安装与迁移正式说明
+
+  - id: rev-2026-03-25-project-activation-layer
+    title: 项目激活层
+    status: merged
+    path: revisions/archive/2026/2026-03-25-project-activation-layer.md
+    linked_stories: []
+    linked_changes: []
+    introduces_rules: []
+    trigger_summary: agent 无法判定项目启用的规则子集
+
+  - id: rev-2026-03-25-foundations-and-profiles-expansion
+    title: Foundations 与 Profiles 扩展
+    status: merged
+    path: revisions/archive/2026/2026-03-25-foundations-and-profiles-expansion.md
+    linked_stories: []
+    linked_changes: []
+    introduces_rules: []
+    trigger_summary: 扩大可组合约束覆盖
+
+  - id: rev-2026-03-25-governance-coverage-expansion
+    title: 治理覆盖扩展
+    status: merged
+    path: revisions/archive/2026/2026-03-25-governance-coverage-expansion.md
+    linked_stories: []
+    linked_changes: []
+    introduces_rules: []
+    trigger_summary: 补齐领域与模板覆盖
+
+  - id: rev-2026-03-31-waf-abstraction-and-framework-upgrade
+    title: WAF 抽象与框架升级
+    status: candidate
+    path: revisions/2026-03-31-waf-abstraction-and-framework-upgrade.md
+    linked_stories: []
+    linked_changes: []
+    introduces_rules: []
+    trigger_summary: 通用化阶段治理与平台约束
+
+  - id: rev-2026-05-25-hierarchical-knowledge-and-self-governance
+    title: 层级化知识架构与长期自治理循环
+    status: candidate
+    path: revisions/2026-05-25-hierarchical-knowledge-and-self-governance-candidate.md
+    linked_stories: []
+    linked_changes: []
+    introduces_rules: [ops.r1, ops.r2, ops.r3, ops.r4, ops.r5, ops.r6]
+    trigger_summary: |
+      引入树形 domain（L1/L2/L3）+ 三件套协议 + token 预算 loader + 自治理循环 foundation；
+      落地 P0 缺口（运行时上下文记忆 / housekeeping / operations 子文件空壳）；删除 {output_folder} 残留
+
+  - id: rev-2026-05-26-progress-traceability-binding
+    title: 进度可追溯与跨工具绑定（BMAD ↔ OpenSpec ↔ Revisions）
+    status: candidate
+    path: revisions/2026-05-26-progress-traceability-and-binding/
+    linked_stories: []
+    linked_changes: []
+    introduces_rules:
+      - tool.r1
+      - tool.r2
+      - tool.r3
+      - tool.r4
+      - tool.bmad.r1
+      - tool.bmad.r2
+      - tool.bmad.r3
+      - tool.bmad.r4
+      - tool.bmad.r5
+      - tool.openspec.r1
+      - tool.openspec.r2
+      - tool.openspec.r3
+      - tool.openspec.r4
+      - tool.openspec.r5
+      - tool.revisions.r1
+      - tool.revisions.r2
+      - tool.revisions.r3
+      - tool.revisions.r4
+      - tool.revisions.r5
+      - tool.binding.r1
+      - tool.binding.r2
+      - tool.binding.r3
+      - tool.binding.r4
+      - tool.binding.r5
+      - tool.binding.r6
+      - tool.binding.r7
+    trigger_summary: |
+      母版自身 BMAD/OpenSpec/Revisions 三层 status / 内容 / commit 互相漂移无机器闸口；
+      引入跨工具标识协议 + 状态机 + 反向引用 + 4 脚本（check_progress_consistency / gen_progress_matrix /
+      check_commit_message / link_revision_to_commits）+ tooling/ L1 域 + 双闸 CI；反向 fit 6 条历史 revision。
+
+  - id: rev-2026-06-05-portable-closed-loop-enforcement
+    title: 便携 git-optional 闭环治理强制执行（脚本零依赖 + 入口不可跳过协议 + 同步台账）
+    status: candidate
+    path: revisions/2026-06-05-portable-closed-loop-enforcement/
+    linked_stories: []
+    linked_changes: []
+    introduces_rules: [tool.binding.r8, tool.binding.r9]
+    trigger_summary: |
+      规则文本与 checker 齐全但断链、且脚本 fail-open；本 revision 把闭环改成 git-optional 强制执行。
+
+  - id: rev-2026-07-07-longtask-and-resource-guardrails
+    title: 长任务与资源护栏 + 字段实战驱动的运行时治理
+    status: candidate
+    path: revisions/2026-07-07-longtask-and-resource-guardrails/
+    linked_stories: []
+    linked_changes: []
+    introduces_rules:
+      - ops.long-running-task.r1
+      - ops.long-running-task.r2
+      - ops.long-running-task.r3
+      - ops.long-running-task.r4
+      - ops.long-running-task.r5
+      - ops.long-running-task.r6
+      - ops.long-running-task.r7
+      - ops.housekeeping.r10
+      - ops.housekeeping.r11
+      - tool.binding.r10
+    trigger_summary: |
+      一个月字段实战暴露既有治理只管"结果对不对"、不管"执行会不会失控"：56 次长任务被人为中断、
+      E2E 无脑并行打满宿主、扫描命令拖垮共驻 LLM、部署无资源预检、多环境漂移、可视化截图返工。
+      引入 long-running-task L2 子域（7 规则）+ preflight_check + finish_and_verify + runtime-context
+      环境矩阵 + 04 §7 资源门 + MCP §9 危险命令隔离 + frontend DoD 前置。
+
+  - id: rev-2026-07-07-agent-runtime-compat
+    title: 跨 agent 运行时兼容层 + 确定性生命周期闸
+    status: candidate
+    path: revisions/2026-07-07-agent-runtime-compat/
+    linked_stories: []
+    linked_changes: []
+    introduces_rules:
+      - tool.r5
+      - tool.r6
+    trigger_summary: |
+      gov.S04.03 回归评估：Codex（2025-12 skills 化）只读 .agents/skills 发现不了 .claude/skills；
+      且治理规则是软约束、模型可忽略缺物理闸。引入 sync-agent-skills.py 确定性镜像（tool.r5 must）+
+      Cursor hooks 模板（危险命令 guard + 收尾一致性自检，纯 Python 零依赖）+ install_cursor_hooks.py
+      （tool.r6 should）+ agent-tooling-mcp §10；.agents/skills 纳入 generated_artifacts。
+
+  - id: rev-2026-07-07-universal-deterministic-gates
+    title: 通用确定性门禁能力（接入即具备，无 git 自动降级）
+    status: candidate
+    path: revisions/2026-07-07-universal-deterministic-gates/
+    linked_stories: []
+    linked_changes: []
+    introduces_rules:
+      - ops.housekeeping.r12
+      - tool.r7
+    trigger_summary: |
+      项目A 会话审计：软规则拦不住"归档后脏工作区"复发；唯一跨 agent（Cursor/Codex/命令行）都触发的
+      确定性层是 git 钩子，却没被普遍安装、hook 体不查工作树卫生、存量项目无补装通道。本 revision 把
+      确定性门禁做成"接入任意项目即具备、无 git 优雅降级"的能力：新增 --assert-staged-pure 卫生闸 +
+      统一入口 install_governance_gates.py + 存量升级 upgrade_project_gates.py + bootstrap/skill 全接入
+      + ops.housekeeping.r12 / tool.r7 + INTEGRATION-GUIDE §3.3/§3.4。
+
+  - id: rev-2026-07-07-upstream-sync-and-chinese-output
+    title: 上游框架升级与中文输出基线（OpenSpec 1.5.0 中文版 + BMAD 6.10.0 + agents 元系统）
+    status: candidate
+    path: revisions/2026-07-07-upstream-sync-and-chinese-output/
+    linked_stories: []
+    linked_changes: []
+    introduces_rules: []
+    trigger_summary: |
+      三上游 pin 停在 2026-05-21 且全英文输出：OpenSpec 1.3.1→1.5.0 并将 opsx 命令/skills
+      中文化（zh-CN governance-overlay）；BMAD 6.7.1→6.10.0（新布局：技能全文进 .claude/skills、
+      _bmad 收缩为配置层）并把 communication/document 语言三处同源设为中文（简体）+
+      governance-bridge 输出语言约束节；agents 元系统上游迁移修正（msitarzewski/agency-agents）
+      + agents/README 入口中文输出约束；UPSTREAM-VERSIONS/sync-upstream 记录再生保护。
+
+  - id: rev-2026-07-20-fact-persistence-and-token-lean-context
+    title: 事实域自动化沉淀与 token 精简装载（问前先查 / 答后落账 / 触发式装载）
+    status: candidate
+    path: revisions/2026-07-20-fact-persistence-and-token-lean-context/
+    linked_stories: []
+    linked_changes: []
+    introduces_rules:
+      - ops.runtime-context.r8
+      - ops.runtime-context.r9
+      - ops.runtime-context.r10
+    trigger_summary: |
+      用户审计：集成到 Codex/Cursor/Claude 的项目里，测试凭证/地址等事实无自动沉淀闭环，
+      agent 重复询问使用者；且 200k 窗口下治理常驻 token 须最小化。缺口：AGENTS 模板入口
+      断链、事实回写 fail-open、--check-runtime-context 未实现、开发域事实无标准位。
+      实施：入口路标（≤10 行）+ r8/r9/r10 + 健康检查/preflight 补实 + governance-continue
+      落账核对 + §7 事实域行 + project-rules 模板；事实内容全部触发式装载并设体量上限。
+
+  - id: rev-2026-07-20-gate-hardening-budget-secrets-ci
+    title: 门禁补强——常驻 token 预算闸 / 明文凭证与 UTF-8 内容闸 / CI 门禁镜像
+    status: candidate
+    path: revisions/2026-07-20-gate-hardening-budget-secrets-ci/
+    linked_stories: []
+    linked_changes: []
+    introduces_rules:
+      - tool.r8
+      - tool.r9
+      - tool.r10
+    trigger_summary: |
+      门控能力实证补强：常驻面 token 预算无闸（200k 窗口下慢性膨胀）、事实落账引入
+      凭证入文件新风险但"禁明文"无确定性拦截、GBK 乱码复现而 UTF-8 无闸、git hook
+      可被 --no-verify 绕过且无 CI 镜像。新增 check_context_budget + check_staged_content
+      （--staged/--all）+ pre-commit/统一入口接入 + templates/ci/ 双平台 + tool.r8/r9/r10。
+
+  - id: rev-2026-07-20-dual-track-default-prd-openspec
+    title: 功能迭代默认双载体——BMAD PRD/Story + OpenSpec change 双向闭环成为默认
+    status: candidate
+    path: revisions/2026-07-20-dual-track-default-prd-openspec/
+    linked_stories: []
+    linked_changes: []
+    introduces_rules:
+      - tool.binding.r11
+    trigger_summary: |
+      用户决策：纯 OpenSpec 默认导致 PRD 进度落后。双载体翻为默认：manifest
+      bmad.enabled: true + code_paths 键；tool.binding.r11（功能迭代 MUST Story+change，
+      治理/文档工作允许 Story+Revision）；AGENTS/entry-guide 口径同步；
+      check_commit_message 命中 code_paths 时强制 Change: 非 none。
+
+  - id: rev-2026-07-22-opensource-release-prep
+    title: 开源发布准备——MIT 合规、双语门面、脱敏导出与发布门禁
+    status: candidate
+    path: revisions/2026-07-22-opensource-release-prep/
+    linked_stories: []
+    linked_changes: []
+    introduces_rules: []
+    trigger_summary: |
+      用户决定开源到 GitHub（MIT / fresh-start / 移除 dogfood / 双语 README）。
+      LICENSE + THIRD-PARTY-NOTICES（BMAD/OpenSpec MIT）+ 双语 README +
+      export_opensource.py 脱敏导出（敏感词扫描 fail-closed）+ 开源仓自带
+      GitHub Actions 门禁；导出树过发布三闸后 fresh-start 单一初始提交。
+
+  - id: rev-2026-05-26-bootstrap-script-overhaul
+    title: Bootstrap 脚本能力提升 — 修复 2 个致命 bug + 2 项设计缺陷（端到端项目接入）
+    status: candidate
+    path: revisions/2026-05-26-bootstrap-script-overhaul/
+    linked_stories: []
+    linked_changes: []
+    introduces_rules: []
+    trigger_summary: |
+      2026-05-26 在 <业务项目B> dogfood scripts/bootstrap-windows.ps1
+      端到端接入新业务项目，暴露 2 个致命 bug + 2 项设计缺陷：
+        B1 bootstrap-ide-tools.ps1:54 To-BmadTools -join 语法错（Step 5 完全 fail）；
+        B2 BMAD install 写死 --action install，与 Step 3 已复制 _bmad/ 冲突；
+        D1 greenfield 默认 mother-repo-root layout 污染业务仓根，stage 与 layout 耦合；
+        D2 不自动 git init / 不生成 .gitignore / runtime-context.yaml / 项目特有 AGENTS /
+           _bmad/<project_id>/ 命名空间 / profile defaults / master_repo_commit_at_adoption。
+      另发现母版仓 working tree 567 files / -76754 lines 污染（推测 BMAD CLI 误重写），
+      列为 tasks 阶段 0 前置处理。

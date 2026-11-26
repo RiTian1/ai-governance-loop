@@ -1,0 +1,44 @@
+# Agent 评估门禁配置（复制到项目根或合并进 project-governance.yaml 的 agent_evals 块）
+
+agent_evals:
+  enabled: true
+  provider: promptfoo  # promptfoo | custom | none
+
+  pr_gate:
+    enabled: true
+    block_merge_on_fail: true
+    min_pass_rate: 0.85
+    min_pass_rate_strict: 0.92  # 预发布 / release 分支可选
+
+  suites:
+    - id: governance-smoke
+      description: 治理相关基础行为（加载 manifest、拒绝跳过验证）
+      config: evals/governance-smoke.yaml
+      required: true
+
+    - id: change-regression
+      description: 与当前 OpenSpec change 相关的回归用例
+      config: evals/change-regression.yaml
+      required: false
+
+    - id: mcp-safety
+      description: MCP 误用 / 越权 / 注入类探针
+      config: evals/mcp-safety.yaml
+      required: false
+
+  red_team:
+    enabled: false
+    config: evals/red-team.yaml
+
+  cost_gate:
+    enabled: false
+    max_token_delta_percent: 10
+
+  reporting:
+    format: json
+    artifact_path: evals/output/latest.json
+    attach_to_pr: true
+
+  notes: |
+    本地：npx promptfoo eval -c evals/promptfooconfig.yaml
+    CI：见 templates/github-workflows/agent-evals.yml.example

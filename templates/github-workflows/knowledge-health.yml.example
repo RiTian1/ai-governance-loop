@@ -1,0 +1,109 @@
+# 复制到 .github/workflows/knowledge-health.yml
+# 强制执行 domains/operations/housekeeping/ + 02-engineering-principles.md §11 的健康自检
+# 警告级门禁：默认不阻断 PR；月度 schedule 跑全量并归档 health report
+
+name: Governance Knowledge Health
+
+on:
+  pull_request:
+    paths:
+      - "00-index.yaml"
+      - "00-index.md"
+      - "0[1-8]-*.md"
+      - "domains/**"
+      - "foundations/**"
+      - "profiles/**"
+      - "templates/**"
+      - "revisions/**"
+      - "scripts/check_knowledge_health.py"
+      - "scripts/context_loader.py"
+      - "project-governance.yaml"
+  schedule:
+    - cron: "0 2 1 * *"   # 每月 1 号 UTC 02:00 月度 health report
+  workflow_dispatch:
+
+jobs:
+  health-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install deps
+        run: pip install -r scripts/requirements.txt
+
+      - name: Run knowledge health checks (all)
+        id: health
+        run: |
+          mkdir -p _logs
+          python scripts/check_knowledge_health.py \
+            --all \
+            --report _logs/health-${{ github.run_id }}.md
+        # exit 1 = errors; exit 0 = clean or warnings only
+
+      - name: Smoke-test context_loader
+        run: |
+          python scripts/context_loader.py \
+            --phase apply \
+            --keywords "runtime-context teardown env" \
+            --files "runtime-context.yaml" \
+            --budget 8000 \
+            --out _logs/context-bundle-smoke.md \
+            --quiet
+          # Loader 必须 exit 0；token 预算超限会通过 trace 日志检测，但不在此处阻断
+
+      - name: Upload health report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: knowledge-health-report
+          path: |
+            _logs/health-*.md
+            _logs/context-bundle-smoke.md
+            revisions/_logs/context-trace/*.jsonl
+          retention-days: 90
+
+      - name: Comment on PR (warnings)
+        if: github.event_name == 'pull_request' && always()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const path = require('path');
+            const reportFiles = fs.readdirSync('_logs').filter(f => f.startsWith('health-'));
+            if (reportFiles.length === 0) return;
+            const report = fs.readFileSync(path.join('_logs', reportFiles[0]), 'utf8');
+            const lines = report.split('\n').slice(0, 30).join('\n');
+            await github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: '## 治理知识库健康报告（节选）\n\n```\n' + lines + '\n```\n\n完整报告见 Actions artifact `knowledge-health-report`。'
+            });
+
+  monthly-archive:
+    if: github.event_name == 'schedule'
+    runs-on: ubuntu-latest
+    needs: health-check
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: knowledge-health-report
+          path: _logs/
+
+      - name: Move month report into revisions/_logs/health/
+        run: |
+          mkdir -p revisions/_logs/health
+          # 月度归档：把当月 health 报告留档进入 revisions/_logs/health/<YYYY-MM>.md
+          DATE=$(date -u +%Y-%m)
+          REPORT=$(ls _logs/health-*.md | head -n1)
+          if [ -n "$REPORT" ]; then
+            cp "$REPORT" "revisions/_logs/health/${DATE}.md"
+          fi
+        # 注：revisions/_logs/ 在 .gitignore 中；月度归档若需进版本库，移除该目录的 .gitignore 条目

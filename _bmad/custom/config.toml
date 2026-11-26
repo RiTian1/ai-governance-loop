@@ -1,0 +1,14 @@
+# Team / enterprise overrides for _bmad/config.toml.
+# Committed to the repo — applies to every developer on the project.
+# Tables deep-merge over base config; keyed entries merge by key.
+#
+# ─── 治理约束（中文输出，强制）───────────────────────────────
+# 本仓治理基线要求：使用 BMAD 框架时，模型的对话沟通与产出文档一律使用中文（简体）。
+# 此处为持久 pin：安装器重装/升级不会覆盖本文件（见 _bmad/config.toml 头部说明），
+# 与 _bmad/core/config.yaml、_bmad/bmm/config.yaml 中的同名字段保持同源一致。
+# 权威依据：_bmad/governance-bridge.yaml「输出语言约束」节 + 05-ai-collaboration-policy。
+
+[core]
+project_name = "governance"
+communication_language = "中文（简体）"
+document_output_language = "中文（简体）"

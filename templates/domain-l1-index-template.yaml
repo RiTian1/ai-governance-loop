@@ -1,0 +1,41 @@
+# Domain _index.yaml 模板（适用于 L1 域根 与 L2 子域）
+# 规范：02-engineering-principles.md §11.4 + foundations/self-governance-and-knowledge-evolution.md §4
+#
+# 文件位置示例：
+#   domains/<l1>/_index.yaml          ← L1 列出 L2 子节点
+#   domains/<l1>/<l2>/_index.yaml     ← L2 列出 L3 叶子（如有）
+#
+# 占位符：<L1_NAME>、<L2_NAME>、<...> 必须替换；保留占位符的文件会被 check_knowledge_health.py 拒绝。
+
+schema_version: 2
+
+domain: <L1_NAME>            # 例：ui / operations / automation
+parent: null                 # L1 为 null；L2 填上级 domain，例：ui
+level: L1                    # L1 / L2 / L3
+
+# 本域整体 size_tokens（index.md + _summary.yaml 估算）
+size_tokens: 0
+
+# 触发器：context_loader.py 据此评分
+triggers:
+  keywords: []               # 任务/对话关键词
+  files: []                  # 任务涉及文件 glob，例："src/ui/**"
+  stack: []                  # 技术栈，例：[react, qt]
+  phases: []                 # 阶段，例：[design, apply, verify]
+
+# 子节点列表
+children:
+  - id: <child_id>           # 例：gui / webui / testing
+    summary: <一句话说明>
+    size_tokens: 0
+    triggers:
+      keywords: []
+      files: []
+      stack: []
+      phases: []
+    aliases: []              # 别名引用，例：[automation/ui-tests]
+    see_also: []             # 双向链接，不影响所有权
+
+# 本域级别的别名与跨域链接（可选）
+aliases: []
+see_also: []

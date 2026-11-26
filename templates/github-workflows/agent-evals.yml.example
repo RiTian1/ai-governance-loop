@@ -1,0 +1,38 @@
+# 复制到 .github/workflows/agent-evals.yml
+# 需安装 promptfoo：npm i -D promptfoo
+
+name: Agent Evals
+
+on:
+  pull_request:
+    branches: [main, master]
+  workflow_dispatch:
+
+jobs:
+  agent-evals:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install promptfoo
+        run: npm ci || npm i -D promptfoo
+
+      - name: Run eval suite
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+        run: npx promptfoo eval -c evals/promptfooconfig.yaml
+
+      - name: Check pass rate
+        run: |
+          python scripts/check-agent-evals.py --min-pass-rate 0.85 --report evals/output/latest.json
+
+      - name: Upload eval report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: agent-evals-report
+          path: evals/output/

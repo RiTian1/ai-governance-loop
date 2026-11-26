@@ -1,0 +1,37 @@
+{
+  "task": "T05-vuln-deep",
+  "frozen_at": "2026-11-18T16:00:00+08:00",
+  "policy": "本地合成的深审样本，两组共用同一份；实验期间不得引入外部来源",
+  "sources": [
+    {
+      "file": "app.py",
+      "url": "local://T05-vuln-deep/app.py",
+      "published_at": "2026-11-18",
+      "downloaded_at": "2026-11-18T16:00:00+08:00",
+      "sha256": "080b41d246a32807798d05995d925be255739092c86f4eda8ca51b86586a8f81",
+      "bytes": 6971,
+      "kind": "primary",
+      "note": "Flask 应用源码"
+    },
+    {
+      "file": "access.log",
+      "url": "local://T05-vuln-deep/access.log",
+      "published_at": "2026-11-18",
+      "downloaded_at": "2026-11-18T16:00:00+08:00",
+      "sha256": "613343f38fc3271320867bf8a95739cd00598a2bbdf0690bf229c444f754ffd8",
+      "bytes": 1579,
+      "kind": "primary",
+      "note": "同期访问日志"
+    },
+    {
+      "file": "README-audit-scope.md",
+      "url": "local://T05-vuln-deep/README-audit-scope.md",
+      "published_at": "2026-11-18",
+      "downloaded_at": "2026-11-18T16:00:00+08:00",
+      "sha256": "7d2a735c59b835e50fac0504286d0f757a8a2a0984c3ebbd7c775955168ebf74",
+      "bytes": 1630,
+      "kind": "primary",
+      "note": "审计范围说明"
+    }
+  ]
+}

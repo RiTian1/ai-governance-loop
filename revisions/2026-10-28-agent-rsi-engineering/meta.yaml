@@ -1,0 +1,33 @@
+revision_id: rev-2026-10-28-agent-rsi-engineering
+title: 长程 Agent RSI 工程试点
+status: candidate
+linked_stories: []
+linked_changes: []
+prd_refs: []
+introduces_rules: []
+modifies_rules: []
+removes_rules: []
+affected_baselines:
+  - LAYOUT.md
+  - rsi/
+  - scripts/bootstrap-windows.ps1
+  - scripts/bootstrap.sh
+  - scripts/export-governance-rules.py
+  - scripts/rsi_session_index.py
+  - AGENTS.md
+  - foundations/agent-rsi-engineering.md
+  - templates/AGENTS.md.template
+  - scripts/rsi_checkpoint.py
+  - scripts/rsi_evaluate.py
+  - scripts/rsi_realworld_benchmark.py
+  - docs/experiments/rsi-realworld/
+commits: []
+created_at: 2026-10-28
+created_by: agent
+reviewed_by: null
+reviewed_at: null
+merged_at: null
+archived_at: null
+trigger_summary: |
+  用户要求将治理方法论优化成工程相关的 RSI 设施，重点处理长期 loop 的
+  上下文压缩后恢复、跨机器状态连续性和改进方案的实证评测。

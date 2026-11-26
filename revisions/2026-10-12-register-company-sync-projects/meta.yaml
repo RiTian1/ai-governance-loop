@@ -1,0 +1,65 @@
+revision_id: rev-2026-10-12-register-company-sync-projects
+title: 把公司治理基线同步包里的 5 个项目登记进项目轴（registry_only）
+
+status: accepted
+
+linked_stories: []
+linked_changes: []
+prd_refs: []
+
+introduces_rules:
+  - projects.r4
+  - projects.deepfake.r1
+  - projects.fake-app-detection.r1
+  - projects.social-media-oinst.r1
+  - projects.aidr-ai-base.r1
+  - projects.aidr-ai-base.r2
+  - projects.cyberstrikeai.r1
+  - projects.cyberstrikeai.r2
+
+modifies_rules: []
+
+removes_rules: []
+
+affected_baselines:
+  - projects/
+  - projects/_index.yaml
+  - projects/index.md
+  - projects/_summary.yaml
+  - 00-index.yaml
+  - revisions/index.yaml
+  - _logs/sync-ledger.md
+
+commits: []
+
+created_at: 2026-10-12
+created_by: agent
+reviewed_by: null
+reviewed_at: null
+merged_at: null
+archived_at: null
+
+trigger_summary: |
+  上一修订（rev-2026-10-12-project-and-business-reference-axes）建立项目轴时，只登记了本机**有运维事实**
+  的三个项目（someapp / <采集项目> / <业务域>-crawler），并在收尾里提出：公司基线同步包
+  `内网工作机-governance-sync-20261012` 的 `other-ai-dev/` 下另有 5 个项目（deepfake /
+  fake-app-detection / social-media-oinst / AIDR(aidr-ai-base) / CyberStrikeAI）本机没有运维事实，
+  是否收进来待用户定。用户答复「合并补充到本机」→ 本修订把那 5 项按同一 DSL 登记为项目叶。
+
+  登记原则（本修订新增 `projects.r4` 固化）：
+  1. **只登记身份与入口**（`projects.r3`），不复制采用层 `project-governance.yaml` / `runtime-context.yaml` 内容；
+  2. 全部标 **`registry_only: true`**，并在叶内显式写明「本机不持有真源、无运维事实」；
+  3. **同步包留档目录不是真源**，本机 Cursor / Codex 会话痕迹也不是项目运维事实。
+
+  两处顺带发现（已写入叶内，未改上游）：
+  - `other-ai-dev/CyberStrikeAI/project-governance.yaml` 与 `other-ai-dev/LangNode/project-governance.yaml`
+    **逐字节相同**（`project_id: langnode`）⇒ `LangNode` 与 `CyberStrikeAI` 是同一第三方项目的两个名字
+    （原判「复制粘贴残留」有误，已由 rev-2026-10-12-<采集项目>-identity-correction 更正）→ 本机仍按目录名登记为
+    `cyberstrikeai`；`projects.cyberstrikeai.r1` 要求不得把它与 `projects/<采集项目>` 当同一项目；
+  - `AIDR` 用**内化式治理 + 自有编号清单**（`01-ai-platform-governance` / `02-verification-policy` /
+    `03-ai-collaboration-policy` / `04-cursor-bmad-integration`），与母版 `00-index` + `01–09` 编号
+    不一一对应 → `projects.aidr-ai-base.r1` 要求按项目自有清单引用。
+
+  同时修正 `projects/index.md` §4「怎么新增一个项目」的步骤：原第 4 步写「在 `00-index.yaml` 的
+  `levels.L1 → projects.children` 追加该 id」，但 `levels.L1` 条目只登记 `path`，**children 的权威位置
+  是 `projects/_index.yaml`**（loader 与 `check_knowledge_health.py` 都读这里）。

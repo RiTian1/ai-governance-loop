@@ -1,0 +1,105 @@
+# Example GitHub Actions workflow for progress traceability gate.
+# Copy to .github/workflows/progress-traceability.yml and adapt.
+# Spec: foundations/progress-traceability-and-binding.md §6 / §8
+#       domains/tooling/progress-binding/index.md §2
+
+name: progress-traceability
+
+on:
+  pull_request:
+    paths:
+      - "_bmad/**"
+      - "openspec/**"
+      - "revisions/**"
+      - "domains/**/_summary.yaml"
+      - "domains/**/_index.yaml"
+      - "scripts/check_progress_consistency.py"
+      - "scripts/gen_progress_matrix.py"
+      - "scripts/check_commit_message.py"
+      - "foundations/progress-traceability-and-binding.md"
+  push:
+    branches: [master, main]
+  schedule:
+    - cron: "0 1 1 * *"   # monthly Observe step in self-governance loop
+
+jobs:
+  consistency:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0   # need full history for link_revision_to_commits.py
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install deps
+        run: pip install -r scripts/requirements.txt
+
+      - name: Encoding gate
+        run: python scripts/check_encoding.py --check-bom --check-validity
+
+      - name: Knowledge health
+        run: python scripts/check_knowledge_health.py --all
+
+      - name: Progress consistency
+        run: python scripts/check_progress_consistency.py --strict --report _logs/progress-consistency.md
+
+      - name: Commit messages on PR commits
+        if: github.event_name == 'pull_request'
+        run: |
+          set -e
+          BASE=${{ github.event.pull_request.base.sha }}
+          HEAD=${{ github.event.pull_request.head.sha }}
+          for sha in $(git rev-list "${BASE}..${HEAD}"); do
+            python scripts/check_commit_message.py --rev "$sha" --quiet || {
+              echo "::error commit=$sha::commit message violates progress-binding";
+              exit 1;
+            }
+          done
+
+      - name: Generate matrix
+        run: python scripts/gen_progress_matrix.py --report _logs/progress-matrix.md
+
+      - name: Upload artefacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: progress-traceability-reports
+          path: _logs/
+
+      - name: Comment matrix on PR
+        if: github.event_name == 'pull_request' && always()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const path = '_logs/progress-matrix.md';
+            if (!fs.existsSync(path)) return;
+            const body = fs.readFileSync(path, 'utf8');
+            const truncated = body.length > 60000 ? body.slice(0, 60000) + "\n\n_(truncated)_" : body;
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: "### Progress Matrix\n\n" + truncated
+            });
+
+  link-revisions:
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install deps
+        run: pip install -r scripts/requirements.txt
+
+      - name: Auto-fill commits in revisions
+        run: python scripts/link_revision_to_commits.py

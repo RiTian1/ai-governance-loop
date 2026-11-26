@@ -1,0 +1,66 @@
+revision_id: rev-2026-10-12-sentinel-guangxi-ops-baseline
+title: 建立环境基线子域（ops.environments）并落首个现场——sentinel 广西环境运维基线
+
+status: accepted
+
+linked_stories: []
+linked_changes: []
+prd_refs: []
+
+introduces_rules:
+  - ops.environments.r1
+  - ops.environments.r2
+  - ops.environments.r3
+  - ops.environments.r4
+  - ops.environments.sentinel-guangxi.r1
+  - ops.environments.sentinel-guangxi.r2
+  - ops.environments.sentinel-guangxi.r3
+  - ops.environments.sentinel-guangxi.r4
+  - ops.environments.sentinel-guangxi.r5
+  - projects.sentinel.r3
+
+modifies_rules: []
+
+removes_rules: []
+
+affected_baselines:
+  - domains/operations/environments/                    # 新增 L2 子域（三件套）
+  - domains/operations/environments/sentinel-guangxi/   # 新增 L3 子域（三件套 + 现场基线）
+  - domains/operations/_index.yaml
+  - domains/operations/index.md
+  - projects/sentinel/index.md
+  - projects/sentinel/_summary.yaml
+  - projects/_index.yaml
+  - revisions/index.yaml
+  - _logs/sync-ledger.md
+
+commits: []
+
+created_at: 2026-10-12
+created_by: agent
+reviewed_by: null
+reviewed_at: null
+merged_at: null
+archived_at: null
+
+trigger_summary: |
+  用户给出广西现场（<内网ip> / root / 22）并要求「把广西环境运维基线加入到 sentinel 项目的运维域中」。
+
+  勘察发现问题有两层。**结构层**：operations 域有 runtime-context（跑通闭环需要哪些 env/凭据/权限）、
+  runbook（一件事怎么做）、release-records（某版本改了什么），唯独缺「**某个环境现在是什么样**」这一层——
+  而这恰是排障与上线前确认现场态时最常查的问题。**内容层**：`projects/sentinel/index.md` §4 把
+  「现场运维事实」指向 `runtime-context.yaml` 的 `guangxi-47` 条目，但根目录的 `runtime-context.yaml`
+  描述的是**母版仓自身的 loops**，全仓 `guangxi-47` 只出现在公司同步包的 secrets 目录与 INDEX.md——
+  即项目轴指向了一个**本仓不存在的落点**。
+
+  实施：新建 `domains/operations/environments/` L2 子域（定义环境基线的六段骨架与编写要求），
+  其下建 `sentinel-guangxi/` L3 子域承载现场基线；4 条 L2 规则 + 5 条 L3 规则；
+  修正 `projects/sentinel` §4 的失效指向并新增 r3 明确三处落点分工（事实→environments、凭据→runtime-context、
+  身份→项目叶）。
+
+  现场基线内容来自 **2026-10-12 实机侦察**（经 selfpjt 的 OpenVPN 隧道）：7 个运行容器（含 1 个不属本
+  compose 的 项目A）；compose project `scopesentry`，工作目录 `/home/sentinel`，配置文件
+  `docker-compose.yml` + `docker-compose.override.yml`；MongoDB 127 集合 / 921,841 文档；
+  `.env` 49 个键名（只记键名不记值）；主机 48 核 188 G / openEuler 20.03 LTS-SP3；6 条已知坑。
+
+  凭据一律不落本仓——现场口令引用 `runtime-context.yaml` 的 `guangxi-47` 条目。

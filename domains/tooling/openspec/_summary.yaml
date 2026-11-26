@@ -1,0 +1,55 @@
+schema_version: 1
+
+domain: tool.openspec
+canonical_owner: true
+inherits_from: tool
+
+tags:
+  - openspec
+  - change
+  - spec
+  - archive
+
+rules:
+  - id: tool.openspec.r1
+    text: OpenSpec change 必须含 proposal.md + tasks.md；引入新能力或多步实施时必须含 design.md
+    severity: must
+    cross_refs: [openspec/]
+    introduced_at: 2026-05-26
+    introduced_by: rev-2026-05-26-progress-traceability-binding
+
+  - id: tool.openspec.r2
+    text: proposal.md 必须含 frontmatter（change_id/linked_story/linked_revision/prd_refs/status/spec_delta_hash）；缺一即非法 change
+    severity: must
+    cross_refs: [foundations/progress-traceability-and-binding §3.2, tooling/progress-binding]
+    introduced_at: 2026-05-26
+    introduced_by: rev-2026-05-26-progress-traceability-binding
+
+  - id: tool.openspec.r3
+    text: archive 必须与配套代码 / 测试 / 配置原子提交；禁止"先归档后补代码"或"归档完不 push"（继承 02 §10）
+    severity: must
+    cross_refs: [02-engineering-principles §10, openspec/ARCHIVE-CHECKLIST]
+    introduced_at: 2026-05-26
+    introduced_by: rev-2026-05-26-progress-traceability-binding
+
+  - id: tool.openspec.r4
+    text: archive 前自问"是否产生全局规则"；是 → 先立 revisions candidate 再 archive；不得拖过 1 个迭代补 revision
+    severity: must
+    cross_refs: [revisions/WORKFLOW.md §6, tooling/revisions]
+    introduced_at: 2026-05-26
+    introduced_by: rev-2026-05-26-progress-traceability-binding
+
+  - id: tool.openspec.r5
+    text: archive 完成的 change 必须移到 openspec/changes/archive/ 且对应主 spec 文件确实更新；archive 后留在 changes/ 根视为非法
+    severity: must
+    cross_refs: []
+    introduced_at: 2026-05-26
+    introduced_by: rev-2026-05-26-progress-traceability-binding
+
+context_dependencies:
+  - tool
+  - tool.revisions
+  - tool.progress-binding
+
+changelog:
+  - 2026-05-26: 子域初建；formalize 与 BMAD/Revisions 边界 + frontmatter 协议

@@ -1,0 +1,66 @@
+revision_id: rev-2026-07-07-upstream-sync-and-chinese-output
+title: 上游框架升级与中文输出基线（OpenSpec 1.5.0 中文版 + BMAD 6.10.0 + agents 元系统）
+
+status: candidate
+
+linked_stories: []
+linked_changes: []
+prd_refs: []
+
+introduces_rules: []
+
+modifies_rules: []
+removes_rules: []
+
+affected_baselines:
+  - UPSTREAM-VERSIONS.yaml
+  - scripts/sync-upstream.ps1
+  - scripts/fetch-reference.ps1
+  - scripts/fetch-reference.sh
+  - BMAD-SINGLE-SOURCE.md
+  - openspec/config.yaml
+  - .claude/commands/opsx/
+  - .claude/skills/openspec-*/
+  - .claude/skills/bmad-*/
+  - _bmad/governance-bridge.yaml
+  - _bmad/core/config.yaml
+  - _bmad/bmm/config.yaml
+  - _bmad/custom/config.toml
+  - agents/README.md
+  - _reference/README.md
+  - project-governance.yaml
+  - AGENTS.md
+  - CLAUDE.md
+  - revisions/index.yaml
+  - _logs/sync-ledger.md
+
+commits: []
+
+created_at: 2026-07-07
+created_by: agent
+reviewed_by: null
+reviewed_at: null
+merged_at: null
+archived_at: null
+
+trigger_summary: |
+  用户要求三个开源上游更新为最新版且建立中文输出基线：OpenSpec 要中文版；
+  BMAD 与多 agent 元系统在桥接入口加中文说明，约束模型输出为中文。
+  实施内容：
+  ① OpenSpec CLI 1.3.1 → 1.5.0（update --force 重生成），12 个 opsx 命令 + 12 个
+    openspec-* skills 正文中文化（zh-CN governance-overlay，语义与上游一致），
+    openspec/config.yaml 增加 artifact 中文正文 MUST 约束；
+  ② BMAD v6.7.1 → v6.10.0：_bmad/ 换为 v6.10 配置层（保留 bridge + custom），
+    .claude/skills 替换为 46 个全文技能；中文输出三处同源
+    （core/bmm config.yaml + custom/config.toml 持久 pin），resolve_config 验证生效；
+    governance-bridge.yaml 新增「输出语言约束（MUST）」节 + v6.10 技能映射；
+  ③ agents 元系统：上游已迁移 The-Agency-Agents → msitarzewski/agency-agents（147 agents），
+    fetch-reference 双脚本与 _reference/README 修正指向；agents/README.md 入口新增
+    「输出语言约束（MUST）」节（对话与文档中文、代码/标识符豁免、英文原文不构成豁免）；
+  ④ 版本 pin 与再生保护：UPSTREAM-VERSIONS.yaml 记录三上游 + 中文化保留说明，
+    sync-upstream.ps1 适配 v6.10 布局并输出"升级后重做中文化"提醒，
+    BMAD-SINGLE-SOURCE.md 改写为 v6.10 单源策略。
+  伴生修复：_bmad/gov/stories/ 04.02-04.05 四个未提交 story 在工作区丢失，
+  已从会话转录逐字恢复（check_progress_consistency --strict 回到 exit 0）。
+  诚实边界：OpenSpec 中文化位于 CLI 再生成路径上，每次 update --force 后需重做；
+  BMAD config.yaml 语言字段重装会重置为安装答案，持久层为 custom/config.toml。

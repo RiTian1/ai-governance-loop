@@ -1,0 +1,67 @@
+revision_id: rev-2026-11-20-credential-vault
+title: 凭据保险箱 gov_vault（加密静态存储 + 取用审计）
+
+status: benchmarked
+
+linked_stories: []
+linked_changes: []
+prd_refs: [gov.FR13]
+
+introduces_rules:
+  - tool.r14
+modifies_rules: []
+removes_rules: []
+
+affected_baselines:
+  - scripts/gov_vault.py
+  - docs/governance/VAULT.md
+  - AGENTS.md
+  - .gitignore
+  - <本机运维脚本>
+  - domains/tooling/_summary.yaml
+
+commits: []
+
+benchmark:
+  mode: regression
+  test: 私钥/证书的字节级往返一致性（15 组边界自测中的核心一条）
+  before: |
+    第一版用 Path.read_text() 读 PEM，Python 通用换行把 CRLF 归一成 LF：
+
+      $ python scripts/gov_vault.py put rt/key --type private_key --file rt.key
+      $ python scripts/gov_vault.py get rt/key --purpose "往返一致性验证" > rt.out
+      $ diff rt.key rt.out
+      Files rt.key and rt.out differ
+
+    对证书/私钥而言这是内容损坏：sha256 变了，任何按指纹校验的流程都会失败。
+  after: |
+    改为字节级读写（read_bytes / write_bytes / stdout.buffer），
+    并区分"单行类凭据裁尾换行"与"PEM 类逐字保留"：
+
+      $ sha256sum rt.key rt.out
+      69372fe1…  rt.key
+      69372fe1…  rt.out
+      字节完全一致: True (len 1732 vs 1732)
+
+      --out 模式同样一致。
+  command: python scripts/gov_vault.py get <name> --purpose "..." --out <file>
+  notes: |
+    另 14 组：缺 purpose 拒绝(exit 2)、错误口令(exit 4)、vault.bin 单字节篡改(exit 4)、
+    rm 无 --yes 拒绝、审计无需口令可读、证书摘要解析、rotate 后旧口令失效。
+    全部为破坏性/边界路径，不是"跑通正常流程"。
+  fresh_context: true
+  fresh_context_note: |
+    往返一致性用 sha256 比对，是字节级事实；篡改检测用翻转单个 bit 复现，
+    均不依赖作者判断。
+
+created_at: 2026-11-20
+created_by: agent
+reviewed_by: null
+reviewed_at: null
+merged_at: null
+archived_at: null
+
+trigger_summary: |
+  <本机运维脚本> 硬编码明文 SSH 口令，只差一次 git add -A 就进历史。
+  建统一入口：加密静态存储 + 取用必留审计 + 口令不落盘，
+  并把"凭据只能经保险箱取用"写成 tool.r14 与 AGENTS.md 的入口说明。

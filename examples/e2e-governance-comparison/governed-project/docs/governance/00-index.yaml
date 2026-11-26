@@ -1,0 +1,19 @@
+- id: governance-index
+  title: 治理总索引
+  path: docs/governance/00-index.md
+  when_to_read: [explore, proposal, design, apply, verify, archive]
+
+- id: verification-policy
+  title: 验证策略与证据政策
+  path: docs/governance/04-verification-policy.md
+  when_to_read: [design, apply, verify]
+
+- id: ai-collaboration
+  title: AI 协作与基线修订政策
+  path: docs/governance/05-ai-collaboration-policy.md
+  when_to_read: [explore, apply, verify, archive]
+
+- id: automation-domain
+  title: 自动化与 E2E 约束
+  path: docs/governance/domains/automation.md
+  when_to_read: [design, apply, verify]

@@ -1,0 +1,44 @@
+revision_id: rev-2026-07-20-dual-track-default-prd-openspec
+title: 功能迭代默认双载体——BMAD PRD/Story + OpenSpec change 双向闭环成为默认
+
+status: candidate
+
+linked_stories: []
+linked_changes: []
+prd_refs: []
+
+introduces_rules:
+  - tool.binding.r11
+
+modifies_rules: []
+removes_rules: []
+
+affected_baselines:
+  - project-governance.yaml
+  - templates/project-governance-manifest-template.yaml
+  - templates/AGENTS.md.template
+  - AGENTS.md
+  - docs/entry-guide.md
+  - domains/tooling/progress-binding/_summary.yaml
+  - scripts/check_commit_message.py
+  - revisions/index.yaml
+  - _logs/sync-ledger.md
+
+commits: []
+
+created_at: 2026-07-20
+created_by: agent
+reviewed_by: null
+reviewed_at: null
+merged_at: null
+archived_at: null
+
+trigger_summary: |
+  用户决策：纯 OpenSpec 默认路径导致 BMAD PRD 进度持续落后、不宜维护。
+  把双载体（BMAD Story/PRD-FR + OpenSpec change 双向绑定）从"可选"翻为"默认"：
+  ① manifest 开关默认 bmad.enabled: true + code_paths 业务代码 glob 键；
+  ② tool.binding.r11——功能迭代/代码变更 MUST Story+change 双载体（纯治理/文档
+     工作允许 Story+Revision 替代）；
+  ③ AGENTS（母版+模板）/entry-guide 默认工作流改口径（常驻增量 ≤4 行）；
+  ④ check_commit_message 硬化：变更命中 code_paths 时 Change: 必须非 none，
+     把"代码必须挂 change"从纪律变成闸。

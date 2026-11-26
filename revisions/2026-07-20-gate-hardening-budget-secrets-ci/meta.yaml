@@ -1,0 +1,50 @@
+revision_id: rev-2026-07-20-gate-hardening-budget-secrets-ci
+title: 门禁补强——常驻 token 预算闸 / 明文凭证与 UTF-8 内容闸 / CI 门禁镜像
+
+status: candidate
+
+linked_stories: []
+linked_changes: []
+prd_refs: []
+
+introduces_rules:
+  - tool.r8
+  - tool.r9
+  - tool.r10
+
+modifies_rules: []
+removes_rules: []
+
+affected_baselines:
+  - scripts/check_context_budget.py
+  - scripts/check_staged_content.py
+  - scripts/check_commit_message.py
+  - scripts/install_git_hooks.py
+  - scripts/install_governance_gates.py
+  - templates/ci/github-actions-governance-gates.yml
+  - templates/ci/gitlab-ci-governance-gates.yml
+  - domains/tooling/_summary.yaml
+  - project-governance.yaml
+  - templates/project-governance-manifest-template.yaml
+  - revisions/index.yaml
+  - _logs/sync-ledger.md
+
+commits: []
+
+created_at: 2026-07-20
+created_by: agent
+reviewed_by: null
+reviewed_at: null
+merged_at: null
+archived_at: null
+
+trigger_summary: |
+  用户追问"脚本门控是否还需要补充工具能力"，按实证缺口审计出四项（其一为纪律变硬）：
+  ① 常驻面 token 预算无闸——200k 窗口约束下 AGENTS/CLAUDE/.cursor rules 膨胀是慢性漂移，
+     context_loader 只管按需装载不管常驻面；
+  ② 事实落账机制（r9）让凭证流向文件，但"禁明文"无确定性拦截；GBK 乱码本机反复复现
+     而"非 UTF-8 禁写"同样无闸；
+  ③ git hook 可被 --no-verify 绕过，无随治理分发的 CI 门禁镜像；
+  实施：check_context_budget.py（CJK 感知估算 + resident_token_budget manifest 键）+
+  check_staged_content.py（凭证正则 + UTF-8 合法性，--staged/--all 双模式 + gov:allow-secret
+  行内豁免）+ pre-commit/统一入口接入 + templates/ci/ 双平台模板 + tool.r8/r9/r10。

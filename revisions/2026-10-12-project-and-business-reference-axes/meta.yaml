@@ -1,0 +1,70 @@
+revision_id: rev-2026-10-12-project-and-business-reference-axes
+title: 补两条显式轴——项目轴 projects/ 与业务参考轴 business-references/（CSC 从 domains/ 迁入）
+
+status: accepted
+
+linked_stories: []
+linked_changes: []
+prd_refs: []
+
+introduces_rules:
+  - projects.r1
+  - projects.r2
+  - projects.r3
+  - projects.someapp.r1
+  - projects.someapp.r2
+  - projects.<采集项目>.r1
+  - projects.<采集项目>.r2
+  - projects.<业务域>-crawler.r1
+  - business-references.r1
+  - business-references.r2
+  - business-references.r3
+
+modifies_rules: []
+
+removes_rules: []
+
+affected_baselines:
+  - projects/
+  - business-references/
+  - domains/csc-operations/            # 迁出
+  - 00-index.yaml
+  - 00-index.md
+  - LAYOUT.md
+  - project-governance.yaml
+  - scripts/check_knowledge_health.py
+  - scripts/check_progress_consistency.py
+  - scripts/export-governance-rules.py
+  - domains/operations/release-records/
+  - domains/operations/runbook/csc-hotfix-qa-verification.md
+  - lab/README.md
+  - lab/ops-facts.md
+  - lab/bin/csc-qa-verify.py
+  - revisions/index.yaml
+  - _logs/sync-ledger.md
+
+commits: []
+
+created_at: 2026-10-12
+created_by: agent
+reviewed_by: null
+reviewed_at: null
+merged_at: null
+archived_at: null
+
+trigger_summary: |
+  用户审计指出：`domains/operations/` 没有任何项目标注，无法区分 sentinel / someapp / <采集项目>
+  等项目。勘察确认基线**没有项目维**——`domains/` 是关切轴（1 套服务全部项目），项目身份只散在
+  三处载体（采用层 project-governance.yaml、执行层 runtime-context.yaml、事实层 lab/*.md 散文），
+  且 `domains/csc-operations/` 是唯一按「客户」命名的域、`release-records` 文件名无产品前缀。
+
+  用户决策：① 建立 project 目录；② CSC **不属于项目**而属于**业务参考**，与项目**同级**，
+  但一个业务参考**可作用于多个项目**（当前作用于 someapp 与 <采集项目>），故 DSL 与项目不同
+  ——业务参考带多值 `related_projects`；后续其他业务参考按同一结构堆叠。
+
+  实施：新建顶层树 `projects/`（三件套 + 每项目一叶：someapp / <采集项目> /
+  <业务域>-crawler）与 `business-references/`（三件套 + `related_projects`），
+  `domains/csc-operations/` 整体迁入 `business-references/csc-operations/`（domain id 保持不变，
+  避免波及 `csc.*` 规则前缀与既有 cross_refs）；两条轴注册到 `00-index.yaml` 的 `entries` 与
+  `levels.L1`、`LAYOUT.md`、`project-governance.yaml`；门禁的扫描树从单一 `domains/` 扩为
+  `(domains, projects, business-references)`；全基线 `domains/csc-operations/` 路径引用改指新位置。

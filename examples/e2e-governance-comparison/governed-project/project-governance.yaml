@@ -1,0 +1,64 @@
+project_id: e2e-governed-sample
+project_name: E2E Governed Sample
+project_stage: brownfield
+
+project_type_profile:
+  - backend-service
+
+governance_layout: docs-governance-subtree
+governance_root: docs/governance
+
+active_baseline:
+  charter: 01-charter.md
+  engineering_principles: 02-engineering-principles.md
+  phase_governance: 02-phase-governance.md
+  workflow: 03-document-workflow.md
+  verification: 04-verification-policy.md
+  ai_collaboration: 05-ai-collaboration-policy.md
+  references: 06-reference-and-standards-policy.md
+  activation: 08-project-activation-model.md
+
+frameworks:
+  openspec:
+    enabled: true
+    default: true
+  bmad:
+    enabled: false
+  superpowers:
+    enabled: false
+
+enabled_foundations:
+  - architecture-and-design-craftsmanship
+  - modeling-and-state-machine-thinking
+  - failure-and-reliability-thinking
+
+enabled_domains:
+  - backend
+  - automation
+  - devops-ci
+  - documentation-and-api
+  - security
+
+enabled_templates:
+  - summary-design-template
+  - detailed-design-template
+  - test-plan-template
+  - design-review-template
+
+local_overrides:
+  - docs/project-rules.md
+
+authority_map:
+  active_project_rules:
+    - docs/project-rules.md
+  project_specific_docs:
+    - docs/changes/e2e-batch-remove-trim/change-request.md
+  deprecated_parallel_rules: []
+
+migration_mode:
+  status: brownfield
+  notes: 现有 E2E 目录已经存在，需要在增量变更时遵守回归门禁与证据要求。
+
+adoption_source:
+  governance_template_origin: /home/ylmgmt/governance
+  adopted_at: 2026-03-25

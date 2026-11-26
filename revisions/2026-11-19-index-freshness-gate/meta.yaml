@@ -1,0 +1,59 @@
+revision_id: rev-2026-11-19-index-freshness-gate
+title: 索引新鲜度检查（00-index.yaml 与 domains/ 结构必须对得上）
+
+status: benchmarked
+
+linked_stories: []
+linked_changes: []
+prd_refs: []
+
+introduces_rules:
+  - tool.r12
+modifies_rules: []
+removes_rules: []
+
+affected_baselines:
+  - scripts/check_index_freshness.py
+  - 00-index.yaml
+  - AGENTS.md
+  - domains/tooling/_summary.yaml
+
+commits: []
+
+benchmark:
+  mode: regression
+  test: 索引与实际结构的双向比对
+  before: |
+    00-index.yaml 的 levels.L1 只登记 4 条，legacy_domains 10 条。实际 domains/ 有 11 个
+    目录。检查结果：
+      dangling      4 条（security-domain → domains/security.md 等，实际已迁为目录）
+      unregistered  9 条（architecture / automation / backend / configuration / devops-ci /
+                    documentation-and-api / observability / orchestration / security）
+      errors=13 warnings=1
+    这意味着按索引装载时，9 个域对 AI 完全不可见。
+  after: |
+    补 orchestration 进 L1、修正 4 条 dangling 的 path 为目录、补齐 4 个旧形态域到
+    legacy_domains。检查结果：
+      L1=5 legacy=14 errors=0 warnings=0
+    并用 context_loader 实测：关键词 "编排 orchestration 证据" 时 orchestration
+    出现在 context bundle 中（修复前索引里没有它，loader 无从发现）。
+  command: python scripts/check_index_freshness.py
+  notes: |
+    这个缺陷存在已久但无人发现，因为 check_knowledge_health 的 orphan 查的是
+    "目录有没有三件套"，不是"目录有没有被索引收录"。两者是不同的问题。
+  fresh_context: true
+  fresh_context_note: |
+    前后对比由脚本自动产出，不依赖作者判断。
+
+created_at: 2026-11-19
+created_by: agent
+reviewed_by: null
+reviewed_at: null
+merged_at: null
+archived_at: null
+
+trigger_summary: |
+  做"索引新鲜度"时先探查现状，发现 00-index.yaml 严重落后：L1 只有 4 条、
+  9 个域目录完全未登记、4 条登记指向已迁移的 .md。索引是 context_loader 的唯一
+  入口，未登记等于该域对 AI 不存在。新增 check_index_freshness.py 做双向比对
+  （dangling / unregistered / mtime_stale），并修好了数据。

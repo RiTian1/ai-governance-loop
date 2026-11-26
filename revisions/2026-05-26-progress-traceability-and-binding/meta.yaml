@@ -1,0 +1,83 @@
+revision_id: rev-2026-05-26-progress-traceability-binding
+title: 进度可追溯与跨工具绑定（BMAD ↔ OpenSpec ↔ Revisions）
+
+status: candidate
+
+linked_stories: []
+linked_changes: []
+prd_refs: []
+
+introduces_rules:
+  - tool.r1
+  - tool.r2
+  - tool.r3
+  - tool.r4
+  - tool.bmad.r1
+  - tool.bmad.r2
+  - tool.bmad.r3
+  - tool.bmad.r4
+  - tool.bmad.r5
+  - tool.openspec.r1
+  - tool.openspec.r2
+  - tool.openspec.r3
+  - tool.openspec.r4
+  - tool.openspec.r5
+  - tool.revisions.r1
+  - tool.revisions.r2
+  - tool.revisions.r3
+  - tool.revisions.r4
+  - tool.revisions.r5
+  - tool.binding.r1
+  - tool.binding.r2
+  - tool.binding.r3
+  - tool.binding.r4
+  - tool.binding.r5
+  - tool.binding.r6
+  - tool.binding.r7
+
+modifies_rules: []
+removes_rules: []
+
+affected_baselines:
+  - foundations/progress-traceability-and-binding.md
+  - domains/tooling/index.md
+  - domains/tooling/_index.yaml
+  - domains/tooling/_summary.yaml
+  - domains/tooling/bmad/index.md
+  - domains/tooling/bmad/_summary.yaml
+  - domains/tooling/openspec/index.md
+  - domains/tooling/openspec/_summary.yaml
+  - domains/tooling/revisions/index.md
+  - domains/tooling/revisions/_summary.yaml
+  - domains/tooling/progress-binding/index.md
+  - domains/tooling/progress-binding/_summary.yaml
+  - scripts/check_progress_consistency.py
+  - scripts/gen_progress_matrix.py
+  - scripts/check_commit_message.py
+  - scripts/link_revision_to_commits.py
+  - templates/revision-structured-directory-template/
+  - templates/bmad-story-frontmatter-template.md
+  - templates/openspec-change-frontmatter-template.md
+  - templates/github-workflows/progress-traceability.yml.example
+  - templates/pre-commit/pre-commit-config-governance.yaml.example
+  - 00-index.yaml
+  - revisions/index.yaml
+  - revisions/WORKFLOW.md
+  - AGENTS.md
+  - CLAUDE.md
+  - README.md
+  - project-governance.yaml
+
+commits: []
+
+created_at: 2026-05-26
+created_by: agent
+reviewed_by: null
+reviewed_at: null
+merged_at: null
+archived_at: null
+
+trigger_summary: |
+  母版自身的 BMAD ↔ OpenSpec ↔ Revisions 三层进度互相无机器绑定，依赖人工对账，
+  不能保证"任何业务情况下及时同步"。引入新 foundation + tooling/ L1 域 + 4 脚本 + 双闸 CI，
+  让三端 status / 内容哈希 / commit 反向引用全部由工具校验，并 dogfood 反向 fit 6 条历史 revision。

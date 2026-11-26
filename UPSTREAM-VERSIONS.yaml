@@ -1,0 +1,54 @@
+# 上游组件版本锁定（由 scripts/sync-upstream.ps1 更新）
+# 治理定制文件不在此列自动覆盖：_bmad/governance-bridge.yaml、_bmad/custom/config.toml、
+#   openspec-bootstrap、openspec/config.yaml rules、opsx 命令与 openspec-* skills 的中文化正文
+
+openspec:
+  npm: "@fission-ai/openspec"
+  version: "1.5.0"
+  skills_generated_by: "1.5.0"
+  profile: custom
+  localization: |
+    zh-CN governance-overlay：.claude/commands/opsx/*.md 与 .claude/skills/openspec-*/SKILL.md
+    正文为中文化维护版（语义与上游 1.5.0 生成物一致）。升级 CLI 后 update --force 会用英文
+    原文覆盖，需重做中文化并保留 openspec/config.yaml 中的输出语言约束。
+  workflows:
+    - propose
+    - explore
+    - new
+    - continue
+    - apply
+    - ff
+    - sync
+    - archive
+    - bulk-archive
+    - verify
+    - onboard
+  last_synced: "2026-07-07"
+
+bmad:
+  repo: "https://github.com/bmad-code-org/BMAD-METHOD"
+  tag: "v6.10.0"
+  version: "6.10.0"
+  modules:
+    - core
+    - bmm
+  last_synced: "2026-07-07"
+  chinese_output: |
+    communication_language / document_output_language 已设为 中文（简体）：
+    _bmad/core/config.yaml、_bmad/bmm/config.yaml（安装产物，重装会重置）
+    _bmad/custom/config.toml（持久 pin，安装器永不覆盖）——三处保持一致。
+  notes: |
+    v6.10 起技能全文直接落在 .claude/skills/（不再是 _bmad/ canonical + 薄壳），
+    _bmad/ 仅存配置与 resolve_config.py；skill-manifest.csv 的 path 字段为历史遗留。
+    新增：bmad-architecture（替代 bmad-create-architecture）、bmad-ux（替代
+    bmad-create-ux-design）、bmad-spec、bmad-forge-idea、bmad-dev-auto。
+    移除：bmad-distillator、bmad-investigate。
+    bmad-create-prd / edit / validate 已弃用，统一使用 bmad-prd。
+
+agency_agents:
+  repo: "https://github.com/msitarzewski/agency-agents"
+  previous_repo: "https://github.com/The-Agency-Agents/agency-agents"  # 已迁移（404）
+  upstream_state: "147 agents / 12 divisions（2026-07-07 核实）"
+  vendored: false   # 按需 scripts/fetch-reference.ps1/.sh 拉到 _reference/（gitignored）
+  curated: "agents/ 下 20 个治理定制代理（含 governance: 绑定），不随上游自动覆盖"
+  last_verified: "2026-07-07"

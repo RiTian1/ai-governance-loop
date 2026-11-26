@@ -1,0 +1,37 @@
+{
+  "task": "T04-vuln-analysis",
+  "frozen_at": "2026-11-18T12:00:00+08:00",
+  "policy": "本地合成的审计样本，两组共用同一份；实验期间不得引入外部来源",
+  "sources": [
+    {
+      "file": "app.py",
+      "url": "local://T04-vuln-analysis/app.py",
+      "published_at": "2026-11-17",
+      "downloaded_at": "2026-11-18T12:00:00+08:00",
+      "sha256": "9c55369946f971ad23df282c19f80e6cbac0fc04a04ee7be6437b8130b855c41",
+      "bytes": 7302,
+      "kind": "primary",
+      "note": "Flask 应用源码，含预埋缺陷"
+    },
+    {
+      "file": "access.log",
+      "url": "local://T04-vuln-analysis/access.log",
+      "published_at": "2026-11-17",
+      "downloaded_at": "2026-11-18T12:00:00+08:00",
+      "sha256": "51201a092ecb5ff4a19cb9c8847a423ee74547d5ef28f7db5a46bfeb0e6dd0e0",
+      "bytes": 2883,
+      "kind": "primary",
+      "note": "同期生产访问日志"
+    },
+    {
+      "file": "README-audit-scope.md",
+      "url": "local://T04-vuln-analysis/README-audit-scope.md",
+      "published_at": "2026-11-17",
+      "downloaded_at": "2026-11-18T12:00:00+08:00",
+      "sha256": "3dfc7eddb97d619358215890968d1d5f48271d098ef6691b1eb6e8b9c5aad58d",
+      "bytes": 1486,
+      "kind": "primary",
+      "note": "审计范围说明"
+    }
+  ]
+}

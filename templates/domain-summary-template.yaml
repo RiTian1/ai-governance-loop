@@ -1,0 +1,36 @@
+# Domain _summary.yaml 模板（适用于所有需要规则化摘要的域）
+# 规范：02-engineering-principles.md §11.2-§11.3 + foundations/self-governance-and-knowledge-evolution.md §4-§5
+#
+# 用途：
+#   - 机器/Loader 在低预算模式下仅装载本文件（每域约 0.3 ~ 0.5 k tokens）
+#   - 给规则分配稳定 rule_id，便于 PR/commit/Agent 输出反向引用
+#   - 全局唯一性由 scripts/check_knowledge_health.py 校验
+#
+# rule_id 格式：<domain-flat-path>.r<n>
+#   - <domain-flat-path>：路径用 . 连接（不含 domains/ 前缀）
+#     例：ops.runbook / ui.webui.a11y / automation.test-data
+#   - r<n>：单调递增整数，不重排、不复用
+#   - 严禁语义化命名（如 ops.runbook.environment-check）
+
+schema_version: 1
+
+domain: <L1>.<L2>            # 例：ops.runbook
+canonical_owner: true        # 本文件是否为该域规则的权威源；false = 引用其他域
+inherits_from: null          # 父域路径，例：ops（继承父域的 cross_refs / tags）
+
+tags: []                     # 跨域检索标签，例：[a11y, security, ci]
+
+rules:
+  - id: <flat>.r1            # 例：ops.runbook.r1
+    text: <一句话规则陈述>
+    severity: must           # must / should / nice
+    rationale: <可选，简短说明为什么>
+    cross_refs: []           # 关联其他 domain 路径，例：[ops/oncall, automation/test-evidence]
+    introduced_at: 2026-05-25
+    introduced_by: <revision-id 或 change-id>
+
+# 本域依赖的其他域（Loader 在装本域时考虑顺装）
+context_dependencies: []
+
+# 历史变更摘要（可选，避免 git blame 难以读出语义演化）
+changelog: []

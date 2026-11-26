@@ -1,0 +1,93 @@
+schema_version: 2
+
+domain: tool
+parent: null
+level: L1
+
+size_tokens: 900
+
+triggers:
+  keywords:
+    - bmad
+    - openspec
+    - revision
+    - 修订单
+    - 候选
+    - epic
+    - story
+    - prd
+    - traceability
+    - 追溯
+    - 进度绑定
+    - 状态机
+    - rule_id
+    - state machine
+  files:
+    - "_bmad/**"
+    - "openspec/**"
+    - "revisions/**"
+    - "scripts/check_progress_consistency.py"
+    - "scripts/gen_progress_matrix.py"
+    - "scripts/check_commit_message.py"
+    - "scripts/link_revision_to_commits.py"
+    - "scripts/sync-bmad-skills.py"
+    - ".claude/skills/bmad-*/**"
+  stack: []
+  phases:
+    - proposal
+    - design
+    - apply
+    - verify
+    - archive
+
+children:
+  - id: bmad
+    summary: BMAD 在母版的角色、开关条件、薄壳同步、与 OpenSpec 的边界
+    size_tokens: 500
+    triggers:
+      keywords: [bmad, prd, epic, story, brief, brainstorming, prfaq, checkpoint]
+      files: ["_bmad/**", ".claude/skills/bmad-*/**", "scripts/sync-bmad-skills.py"]
+      phases: [proposal, design, apply]
+    aliases: []
+    see_also: [tooling/openspec, tooling/progress-binding]
+
+  - id: openspec
+    summary: OpenSpec change 接入、archive 协议、与 revisions 的衔接
+    size_tokens: 600
+    triggers:
+      keywords: [openspec, opsx, change, spec delta, archive, ADDED, MODIFIED, REMOVED]
+      files: ["openspec/**", "scripts/sync-upstream.ps1"]
+      phases: [proposal, design, apply, verify, archive]
+    aliases: []
+    see_also: [tooling/revisions, tooling/progress-binding]
+
+  - id: revisions
+    summary: 全局基线变更的状态机、结构化目录协议、与 OpenSpec archive 的衔接
+    size_tokens: 700
+    triggers:
+      keywords: [revision, candidate, accepted, merged, archived, 修订单, 全局基线, foundation]
+      files: ["revisions/**", "foundations/**"]
+      phases: [proposal, verify, archive]
+    aliases: []
+    see_also: [tooling/openspec, tooling/progress-binding]
+
+  - id: progress-binding
+    summary: 跨工具绑定的工程构件（标识协议 / 状态机 / 反向引用 / matrix / 双闸 CI / 检查点协议）
+    size_tokens: 1700
+    triggers:
+      keywords: [traceability, binding, 绑定, 追溯, 状态机, drift, matrix, frontmatter, commit message]
+      files:
+        - "scripts/check_progress_consistency.py"
+        - "scripts/gen_progress_matrix.py"
+        - "scripts/check_commit_message.py"
+        - "scripts/link_revision_to_commits.py"
+        - "templates/github-workflows/progress-traceability.yml.example"
+      phases: [proposal, design, apply, verify, archive]
+    aliases: []
+    see_also: [foundations/progress-traceability-and-binding, foundations/self-governance-and-knowledge-evolution]
+
+aliases: []
+see_also:
+  - foundations/progress-traceability-and-binding
+  - foundations/self-governance-and-knowledge-evolution
+  - 02-engineering-principles

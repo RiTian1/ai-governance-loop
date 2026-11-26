@@ -1,0 +1,68 @@
+revision_id: rev-2026-11-19-rule-promotion-benchmark-gate
+title: 规则晋升引入评测门（benchmarked 态）与 change 工件边界
+
+status: benchmarked
+
+linked_stories: []
+linked_changes: []
+prd_refs: []
+
+introduces_rules:
+  - tool.revisions.r6
+  - tool.binding.r12
+modifies_rules:
+  - tool.revisions.r5
+removes_rules: []
+
+affected_baselines:
+  - revisions/WORKFLOW.md
+  - AGENTS.md
+  - 04-verification-policy.md
+
+commits: []
+
+# 评测证据（tool.revisions.r6，本次改动的 dogfood）
+benchmark:
+  mode: regression
+  test: scripts/check_progress_consistency.py --strict
+  before: "errors=0 warnings=0（改动前基线，stories=20 changes=2 revisions=32）"
+  after: "errors=0 warnings=0（改动后，stories=21 changes=2 revisions=33 rules=251）"
+  command: python scripts/check_progress_consistency.py --strict
+  notes: |
+    本次为治理文档与校验脚本改动，无可用的任务级配对实验，故采用回归证据。
+    新增状态 benchmarked 的合法性由 T3（合法三元组）覆盖，
+    T10（终态 Story 不得指向未评审 revision）已同步纳入 benchmarked。
+    另以全仓搜索确认无旧状态机残留（`candidate → accepted` 仅存在于本 revision
+    的"修订前"描述中）。
+  fresh_context: true
+  fresh_context_note: |
+    回归证据为脚本自动产出，不含作者主观判断，天然满足 fresh context 要求。
+
+created_at: 2026-11-19
+created_by: agent
+reviewed_by: null
+reviewed_at: null
+merged_at: null
+archived_at: null
+
+trigger_summary: |
+  2026-11-19 审阅 项目A 运行时给自家 agent 的治理体系（AGENTS.md v2 入口 + runtime-context
+  的 loops + openspec/specs 下 agent-orchestration-governance-baseline /
+  agent-observer-governance-promotion / dogfood-evolution-context-index-governance，
+  以及两条 governance revision），与母版仓对照后发现两处能力缺口：
+
+  1. 母版仓 revision 状态机是 candidate → accepted → implementing → merged，
+     merged 前只要求"至少一条验证或回归证据"，不要求证明"该规则本身有效"。
+     项目A 的 promotion 状态机含 benchmarked 态，且 Evaluator 必须在 fresh context
+     （不复用执行者隐含上下文）跑 benchmark，输出 pass/fail + quality_delta +
+     cost_delta + latency_delta + regression_risk。母版仓的 Eval CI（04-verification-policy
+     §6）只在 PR 合并前跑，管代码，不管规则。
+
+  2. 项目A 的 governance-revision-2026-03-18 明确"change 目录下的详细设计与测试模板
+     属于变更局部工件，不自动提升为项目级约束"。母版仓 revisions/WORKFLOW.md §2 有
+     沉淀范围分级，但未禁止把 change 内的具体设计当作基线引用。
+
+  不引入的：项目A 的运维 loop（context-refresh / delete-redirects-to-recycle-bin /
+  target-is-build-output 等）属于其产品运维动作，与治理框架通用能力无关；
+  工作包 DAG、fan-in、六能力平面属于编排运行时语义，母版仓 proj.orch.r1-r8 已覆盖
+  证据闭环、晋升硬条件、判不了显式表达三条底线，不重复引入调度器级机制。

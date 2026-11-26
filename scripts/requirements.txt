@@ -1,0 +1,10 @@
+# 治理门禁脚本依赖
+#
+# 重要：以下均为「可选加速依赖」，不是门禁前提。
+# 便携治理的地基门禁（scripts/check_progress_consistency.py /
+# gen_progress_matrix.py / check_commit_message.py）在**只有 Python 标准库**
+# 的裸环境下必须可跑——缺失 pyyaml 时自动走 scripts/_governance_yaml.py 的
+# 纯标准库 YAML 子集解析回退，绝不因此失效或退出码 2。
+#
+# 装上 pyyaml 仅带来更快、更全的 YAML 解析，属锦上添花。
+pyyaml>=6.0  # optional accelerator — NOT required for gates to run

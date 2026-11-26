@@ -1,0 +1,127 @@
+schema_version: 1
+
+domain: tool
+canonical_owner: true
+inherits_from: null
+
+tags:
+  - tooling
+  - bmad
+  - openspec
+  - revisions
+  - progress-binding
+  - traceability
+
+rules:
+  - id: tool.r1
+    text: 工具开关（frameworks.bmad / frameworks.openspec / frameworks.superpowers）必须与项目实际产出一致；开关启用但目录无产出视为治理失败
+    severity: must
+    cross_refs: [tooling/bmad, tooling/openspec, project-governance]
+    introduced_at: 2026-05-26
+    introduced_by: rev-2026-05-26-progress-traceability-binding
+
+  - id: tool.r2
+    text: BMAD 与 OpenSpec 不得双轨记录同一份 spec；BMAD Story 引用 OpenSpec change 而非复制 spec 内容
+    severity: must
+    cross_refs: [tooling/bmad, tooling/openspec, foundations/progress-traceability-and-binding]
+    introduced_at: 2026-05-26
+    introduced_by: rev-2026-05-26-progress-traceability-binding
+
+  - id: tool.r3
+    text: 全局基线规则（写入 foundations/ 主文档 / domains/_summary.yaml）必须经 revisions/ 候选；禁止直接改基线无 revision 留痕
+    severity: must
+    cross_refs: [tooling/revisions, 02-engineering-principles §7-§8]
+    introduced_at: 2026-05-26
+    introduced_by: rev-2026-05-26-progress-traceability-binding
+
+  - id: tool.r4
+    text: 跨工具绑定（progress-binding）为强制启用；任意项目启用本治理母版即承担 commit message + state-machine 检查
+    severity: must
+    cross_refs: [tooling/progress-binding, foundations/progress-traceability-and-binding]
+    introduced_at: 2026-05-26
+    introduced_by: rev-2026-05-26-progress-traceability-binding
+
+  - id: tool.r5
+    text: 跨 agent 技能发现——.claude/skills 必须镜像到 .agents/skills（Codex/Cursor 共同遵循的 Agent Skills 开放标准目录），由 scripts/sync-agent-skills.py 确定性生成并登记 generated_artifacts；禁止手改镜像、改源后必须重跑
+    severity: must
+    cross_refs: [ops/housekeeping (r10), agent-tooling-mcp §10]
+    introduced_at: 2026-07-07
+    introduced_by: rev-2026-07-07-agent-runtime-compat
+
+  - id: tool.r6
+    text: 使用 Cursor 的项目应启用确定性生命周期闸（.cursor/hooks）——把危险命令拦截（beforeShellExecution）与收尾一致性自检（stop）落成模型无法忽略的脚本；模板见 templates/cursor-hooks/，安装用 scripts/install_cursor_hooks.py。hooks 为本地闸（.cursor 不入库），不替代 CI/同步台账
+    severity: should
+    cross_refs: [agent-tooling-mcp §9-§10, 05-ai-collaboration-policy §6]
+    introduced_at: 2026-07-07
+    introduced_by: rev-2026-07-07-agent-runtime-compat
+
+  - id: tool.r7
+    text: 治理接入（bootstrap 两条路径、agent 对话式集成）必须经统一入口 scripts/install_governance_gates.py 激活确定性门禁——有 .git 装 git 钩子（pre-commit 一致性+staged-pure 卫生、commit-msg 协议），无 .git 优雅降级退出 0，收尾强制自检并贴出 exit 0 作为集成完成证据；git 钩子是唯一跨 agent（Cursor/Codex/命令行）都触发的确定性主干层，Cursor hooks 仅为可选本地加分。存量项目用 scripts/upgrade_project_gates.py 从母版侧幂等补装门禁 bundle
+    severity: must
+    cross_refs: [tool.r4, tool.r6, ops.housekeeping.r12, docs/governance/INTEGRATION-GUIDE §3.3-§3.4, agent-tooling-mcp §10]
+    introduced_at: 2026-07-07
+    introduced_by: rev-2026-07-07-universal-deterministic-gates
+
+  - id: tool.r8
+    text: 常驻上下文预算闸——每轮必进上下文的入口文件（AGENTS.md/CLAUDE.md/alwaysApply mdc/copilot-instructions）按工具组求和不得超 resident_token_budget（manifest 键，默认 6000 tokens）；超限内容必须下沉到触发式装载。由 scripts/check_context_budget.py 在 pre-commit/CI 强制
+    severity: must
+    cross_refs: [ops.runtime-context.r10, 02-engineering-principles §11]
+    introduced_at: 2026-07-20
+    introduced_by: rev-2026-07-20-gate-hardening-budget-secrets-ci
+
+  - id: tool.r9
+    text: staged 内容闸——提交内容不得含明文凭证（口令/私钥/token/URL userinfo；只存引用 source+id，假值用 gov:allow-secret 行内豁免）且文本文件必须为合法 UTF-8。由 scripts/check_staged_content.py 在 pre-commit（--staged）与 CI（--all）强制
+    severity: must
+    cross_refs: [ops.runtime-context.r9, security/secrets-management]
+    introduced_at: 2026-07-20
+    introduced_by: rev-2026-07-20-gate-hardening-budget-secrets-ci
+
+  - id: tool.r10
+    text: 有远端 CI 的项目应部署治理门禁 CI 镜像（templates/ci/ 的 GitHub Actions / GitLab CI 模板）——git hook 可被 --no-verify 绕过，CI 是不可绕过的确定性层
+    severity: should
+    cross_refs: [tool.r7, devops-ci/pipeline-gates]
+    introduced_at: 2026-07-20
+    introduced_by: rev-2026-07-20-gate-hardening-budget-secrets-ci
+
+  - id: tool.r11
+    text: 治理文档声明的规则号/路径/脚本/状态机 MUST 与实际一致；状态机以 revisions/WORKFLOW.md 为正典，其他基线文档复述时 MUST NOT 出现正典中没有的状态；不一致 MUST 由 scripts/check_declaration_fact.py 在提交前查出并阻断
+    severity: must
+    cross_refs: [scripts/check_declaration_fact.py, revisions/WORKFLOW.md §1]
+    introduced_at: 2026-11-19
+    introduced_by: rev-2026-11-19-declaration-fact-consistency
+
+  - id: tool.r12
+    text: 00-index.yaml MUST 与实际 domains/ 结构一致——登记的 path 必须存在，domains/ 下每个域目录必须被 L1 或 legacy_domains 收录；索引是 AI 装载治理上下文的唯一入口，未登记等于该域对 AI 不存在
+    severity: must
+    cross_refs: [scripts/check_index_freshness.py, 00-index.yaml]
+    introduced_at: 2026-11-19
+    introduced_by: rev-2026-11-19-index-freshness-gate
+
+  - id: tool.r13
+    text: 治理能力面的任何增删改 MUST 先更新 docs/governance-roadmap/CAPABILITY-MAP.yaml 再改实现；四端绑定（PRD FR ↔ Story ↔ Change ↔ Revision）MUST 闭合，由 scripts/check_capability_map.py 校验；能力成熟度自评 MUST NOT 超过证据支撑的等级——M2 需证伪证据、M3 需效应量、M4 需跨任务复现
+    severity: must
+    cross_refs: [scripts/check_capability_map.py, docs/governance-roadmap/CAPABILITY-MAP.yaml, _bmad/gov/prd.md]
+    introduced_at: 2026-11-20
+    introduced_by: rev-2026-11-20-capability-map-four-layer
+
+  - id: tool.r14
+    text: 凭据/私钥/证书 MUST NOT 以明文出现在任何入库文件（源码、配置、文档、注释、测试 fixture、commit message）；取用 MUST 经 scripts/gov_vault.py，且每次 MUST 声明 purpose 并写入审计；口令 MUST NOT 落盘（环境变量 / --passphrase-file / GOV_VAULT_PASSPHRASE_CMD 三选一）；保险箱 MUST 跨平台——同一份密文库在 Windows/macOS/Linux 上均可读，脚本 MUST NOT 依赖 3.9+ 专有 API；多端共享时 vault.meta.json 与 entries/ 可入库而 local/ 与 audit.log MUST NOT 入库，新机器 MUST NOT 重新 init（会换 salt 使旧密文作废）
+    severity: must
+    cross_refs: [scripts/gov_vault.py, scripts/gov_vault_selftest.py, docs/governance/VAULT.md, tool.r9]
+    introduced_at: 2026-11-20
+    introduced_by: rev-2026-11-20-credential-vault
+
+context_dependencies:
+  - operations/runbook
+  - operations/change
+
+changelog:
+  - 2026-05-26: 创建 L1 域三件套；引入 BMAD/OpenSpec/Revisions/Progress-binding 4 子域
+  - 2026-07-07: 增 tool.r5（跨 agent 技能镜像 .agents/skills）+ tool.r6（Cursor hooks 确定性闸）；rev-2026-07-07-agent-runtime-compat
+  - 2026-07-07: 增 tool.r7（统一门禁入口 install_governance_gates + 存量升级 upgrade_project_gates；接入即具备、无 git 降级）；rev-2026-07-07-universal-deterministic-gates
+  - 2026-07-20: 增 tool.r8（常驻 token 预算闸）/ tool.r9（内容闸：明文凭证+UTF-8）/ tool.r10（CI 门禁镜像 should）；rev-2026-07-20-gate-hardening-budget-secrets-ci
+  - 2026-11-19: 增 tool.r11（声明-事实一致性检查；状态机正典唯一）；rev-2026-11-19-declaration-fact-consistency
+  - 2026-11-19: 增 tool.r12（索引新鲜度；00-index.yaml 与 domains/ 结构一致）；rev-2026-11-19-index-freshness-gate
+  - 2026-11-20: 增 tool.r13（能力地图 + 四端绑定含 PRD FR；成熟度不可自评升级）；rev-2026-11-20-capability-map-four-layer
+  - 2026-11-20: 增 tool.r14（凭据保险箱 gov_vault：加密静态存储 + 取用审计）；rev-2026-11-20-credential-vault
+  - 2026-11-20: tool.r14 扩写跨平台与多端协同口径（同一密文库三平台可读、禁 3.9+ API、local/ 与 audit.log 不入库、新机禁重新 init）；gov_vault v2 改造

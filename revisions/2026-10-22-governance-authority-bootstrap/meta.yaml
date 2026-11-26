@@ -1,0 +1,40 @@
+schema_version: 1
+
+revision_id: rev-2026-10-22-governance-authority-bootstrap
+title: 汇总现有项目治理与 DSL 快照并建立 NAS GitLab 唯一权威入口
+status: candidate
+candidate_since: 2026-10-22
+merged_at: null
+archived_at: null
+
+owner: governance
+scope: mother-repo
+
+introduces_rules: []
+modifies_rules: []
+removes_rules: []
+
+linked_stories:
+  - gov.S04.11
+linked_changes: []
+
+introduces_paths:
+  - projects/项目A/
+  - projects/sentinel/
+  - infrastructure/gitlab/
+  - business-references/csc-operations/revisions/
+modifies_paths:
+  - projects/_index.yaml
+  - revisions/index.yaml
+  - scripts/check_progress_consistency.py
+  - domains/operations/release-records/_summary.yaml
+removes_paths: []
+
+triggers:
+  - user_request: 建立跨机器共享的治理权威仓，整合 Nexus、Sentinel 和运维治理材料
+  - deployment: NAS 私有 GitLab CE 已就绪，需要把经过验证的母版内容纳入项目管理
+
+commits: []
+evidence_paths:
+  - projects/项目A/SOURCE-MANIFEST.md
+  - projects/sentinel/SOURCE-MANIFEST.md

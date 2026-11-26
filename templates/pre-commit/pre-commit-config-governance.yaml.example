@@ -1,0 +1,27 @@
+# Example .pre-commit-config.yaml for governance projects
+# Copy to repo root as `.pre-commit-config.yaml` and adapt.
+# Then `pre-commit install --hook-type commit-msg --hook-type pre-commit`
+# Spec: domains/tooling/progress-binding/index.md §2 (pre-commit lane)
+
+repos:
+  - repo: local
+    hooks:
+      - id: check-encoding
+        name: Encoding gate (UTF-8 + LF + no BOM)
+        entry: python scripts/check_encoding.py --staged
+        language: system
+        pass_filenames: false
+        stages: [pre-commit]
+
+      - id: check-progress-consistency-quick
+        name: Progress consistency (quick)
+        entry: python scripts/check_progress_consistency.py --quick --quiet
+        language: system
+        pass_filenames: false
+        stages: [pre-commit]
+
+      - id: check-commit-message
+        name: Commit message (Story / Change / Revision / Rules trailers)
+        entry: python scripts/check_commit_message.py
+        language: system
+        stages: [commit-msg]

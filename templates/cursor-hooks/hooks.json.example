@@ -1,0 +1,18 @@
+{
+  "version": 1,
+  "hooks": {
+    "beforeShellExecution": [
+      {
+        "command": "python .cursor/hooks/guard_dangerous_command.py",
+        "failClosed": true,
+        "timeout": 10
+      }
+    ],
+    "stop": [
+      {
+        "command": "python .cursor/hooks/checkpoint_consistency.py",
+        "timeout": 60
+      }
+    ]
+  }
+}

@@ -1,0 +1,56 @@
+revision_id: rev-2026-11-20-shared-root-cause-clause
+title: 共享根因必须单独成条（05-ai-collaboration-policy §8.6）
+
+# 状态只能是 candidate：本条的评测（n=25 配对）尚未运行。
+# 按 tool.revisions.r6，未产出效应量 / 回归证据 / waiver 前不得进入 benchmarked。
+status: candidate
+
+linked_stories: []
+linked_changes: []
+prd_refs: []
+
+introduces_rules: []
+modifies_rules: []
+removes_rules: []
+
+affected_baselines:
+  - 05-ai-collaboration-policy.md
+
+commits: []
+
+benchmark:
+  mode: planned
+  status: not_run
+  plan: |
+    J3b（zb_users/PLUGIN/FileManage 审计）配对实验，n=25：
+    每轮同源码下跑 baseline（裸 task.md）与 governance（task.md + §8 附录）各一次，
+    交叉排序以抵消时间漂移。
+    主指标：GT-B01（ExportFailure 根因是否单独成条）的配对命中差异，McNemar 精确检验。
+    次指标：recall / precision / 条数。
+  rationale: |
+    为什么这条能被测：J3b 四轮实测里 GT-B01 命中率恰好 2/4 = 50%，
+    且它是**唯一**有区分度的 L1（B02/B03/B04 四轮全中）。
+    即"会不会把根因单列"这个行为在无条款时是随机的一半，有条款若能被推到 0.9，
+    n=25 的 McNemar 可达 p<0.01；n=15 只有 p≈0.07（临界）。
+  expected: |
+    预期 governance 组 GT-B01 命中率显著高于 baseline。
+    若两组无差异，本条应被驳回（rejected），理由是"条款无法改变该行为"，
+    而不是"实验没做够"——除非效应量置信区间跨过 0 且方向一致数不足。
+  fresh_context: true
+  fresh_context_note: |
+    实验由脚本按固定顺序跑，被测模型看不到条款作者的会话；
+    条款文本以附录形式注入 task 文件，与执行过程分离。
+
+created_at: 2026-11-20
+created_by: agent
+reviewed_by: null
+reviewed_at: null
+merged_at: null
+archived_at: null
+
+trigger_summary: |
+  J3b 四轮实测发现：recall 的 0.75/1.00 两极化 100% 由"会不会把
+  FileManage_ExportError 这个公共根因单独成条"决定（命中 2/4），
+  而三条更明显的 L1 四轮全中毫无区分度。说明"根因单列"是一个
+  真实存在、可测量、且当前无条款覆盖的能力缺口。
+  据此在 05 §8 增第 8.6 条，并设计 n=25 配对实验验证。

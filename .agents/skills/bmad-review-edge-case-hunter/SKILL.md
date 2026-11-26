@@ -1,0 +1,17 @@
+---
+name: bmad-review-edge-case-hunter
+description: Walk every branching path and boundary condition in content, report only unhandled edge cases. Orthogonal to adversarial review - method-driven not attitude-driven. Use when you need exhaustive edge-case analysis of code, specs, or diffs.
+canonical_source: .claude/skills/bmad-review-edge-case-hunter
+---
+
+# Agent Skills 镜像入口（跨工具兼容层，勿手改）
+
+本文件由 `scripts/sync-agent-skills.py` 从 `.claude/skills/bmad-review-edge-case-hunter` 确定性生成，供 Codex / 其它读取
+`.agents/skills/` 的 agent 发现本技能。**权威工作流在 canonical 源，不在此处。**
+
+## Activation
+
+1. 读取 canonical 源：`.claude/skills/bmad-review-edge-case-hunter`
+2. 按其中的 `SKILL.md` / `workflow.md` 执行；如需配置见治理入口 `AGENTS.md`。
+
+Regenerate: `python scripts/sync-agent-skills.py --prune`

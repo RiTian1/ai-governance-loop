@@ -1,0 +1,65 @@
+revision_id: rev-2026-11-20-vault-bypass
+title: 保险箱绕过测试集与两处约束漏洞修复
+
+status: benchmarked
+
+linked_stories: []
+linked_changes: []
+prd_refs: [gov.FR13, gov.NFR03]
+
+introduces_rules: []
+modifies_rules: []
+removes_rules: []
+
+affected_baselines:
+  - scripts/check_vault_bypass.py
+  - scripts/gov_vault.py
+  - scripts/check_gates_portability.py
+  - scripts/export_opensource.py
+  - docs/governance/VAULT.md
+  - docs/governance-roadmap/CAPABILITY-MAP.yaml
+
+commits: []
+
+benchmark:
+  mode: regression
+  test: 15 条按攻击面枚举的绕过尝试，每条断言"拒绝 + 无副作用"
+  before: |
+    第一轮 13/15，抓到两个真实缺陷：
+
+    A2  put 在审计不可写时返回 exit 1（traceback），而 get 正确返回 5
+        ——同一个约束在两个命令上行为不一致。
+
+          $ replace local/ with a file; gov_vault.py put prod/target ...
+          Traceback (most recent call last): FileExistsError ...
+          (exit 1)
+
+    A4  审计写不进去时凭据已经被改了：cmd_put 顺序是 save_entry → audit，
+        审计失败抛异常但数据已落盘——"改了但日志里查不到"。
+
+          $ chmod 400 local/audit.log; gov_vault.py put prod/target ...
+          (被测值已被覆盖，audit.log 无记录)
+  after: |
+    FileLock 的 mkdir/PermissionError 转 VaultError(5)；put/rm 在审计失败时回滚。
+    重跑三平台：
+
+      Windows 11 / 3.13.14       attempts=15  rejected=15
+      macOS 14.8.8 / 3.9.6       attempts=15  rejected=15
+      Linux (root) / 3.10.12     attempts=13  rejected=13  （2 条不适用）
+
+    Linux 少两条是因为 root 不受文件权限约束（chmod 400 后照样能写），
+    标为不适用并从 attempts 排除——既不算失败也不算通过。
+
+    原有 66 项功能自测无回归（66/66）。
+
+verification:
+  - 三平台绕过测试：15/15、15/15、13/13
+  - 功能回归：gov_vault_selftest.py 66/66
+  - 可移植性：15 门禁 × 4 环境全绿，新增静态兼容扫描无违规
+  - 四项治理校验 errors=0
+
+notes: |
+  顺带发现并修复一类复发性 bug：check_vault_bypass.py 第一版用了
+  Path.write_text(newline=)（3.10+），在 macOS 3.9.6 上 TypeError。
+  同一个坑在 gov_vault.py 里已修过一次，因此把 3.10+ API 检测固化成
+  check_gates_portability.py 的静态扫描，并顺手修掉 export_opensource.py 里同样一处。

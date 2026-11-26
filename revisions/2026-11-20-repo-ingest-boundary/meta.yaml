@@ -1,0 +1,37 @@
+revision_id: rev-2026-11-20-repo-ingest-boundary
+title: 仓库入库边界：大体积归档、外部快照与含凭据脚本
+
+status: candidate
+
+linked_stories: []
+linked_changes: []
+prd_refs: [gov.FR13]
+
+introduces_rules: []
+modifies_rules: []
+removes_rules: []
+
+affected_baselines:
+  - .gitignore
+
+commits: []
+
+benchmark:
+  mode: none
+  status: not_applicable
+  reason: |
+    本条是仓库边界策略，不是"某条规则是否有效"的假设，没有可量化的行为效应。
+    可验证的部分已由工程检查覆盖：git check-ignore 的命中结果、以及
+    check_staged_content 在暂存后仍能拦住凭据。因此不立效应量，也不标 benchmarked。
+
+created_at: 2026-11-20
+created_by: agent
+reviewed_by: null
+reviewed_at: null
+merged_at: null
+archived_at: null
+
+trigger_summary: |
+  清理未提交工作时发现三类内容不该入库却躺在工作区：73MB 归档、含嵌套 .git 的
+  外部快照、以及一个硬编码明文 SSH 口令的本机脚本。前两类靠 .gitignore 前置拦截，
+  第三类不入库并在 Story 里记录处置建议。

@@ -1,0 +1,24 @@
+revision_id: rev-2026-11-04-nas-gitlab-project-repositories
+title: 为项目工作流索引 NAS GitLab 建仓与迁移说明
+status: candidate
+linked_stories: []
+linked_changes: []
+prd_refs: []
+introduces_rules: []
+modifies_rules: []
+removes_rules: []
+affected_baselines:
+  - AGENTS.md
+  - 00-index.yaml
+  - 00-index.md
+  - projects/index.md
+  - projects/README.md
+  - projects/NAS-GITLAB-REPOSITORIES.md
+commits: []
+created_at: 2026-11-04
+created_by: agent
+reviewed_by: null
+reviewed_at: null
+merged_at: null
+archived_at: null
+trigger_summary: 用户要求在项目管理参考加入 NAS GitLab 建仓和连接说明，并让全部工作流从索引按需发现。

@@ -1,0 +1,55 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 700" width="900" height="700" role="img" aria-labelledby="t d">
+<title id="t">治理能力成熟度雷达（当前 vs 目标）</title>
+<desc id="d">A-F 六层，分数=层内能力平均成熟度归一化 M0=0 M4=1</desc>
+<rect width="900" height="700" fill="#ffffff"/>
+<polygon points="450.0,300.0 484.6,320.0 484.6,360.0 450.0,380.0 415.4,360.0 415.4,320.0" fill="none" stroke="#e5e0f0" stroke-width="1"/>
+<text x="454.0" y="298.0" font-size="10" fill="#a49fc0">1 (0.25)</text>
+<polygon points="450.0,260.0 519.3,300.0 519.3,380.0 450.0,420.0 380.7,380.0 380.7,300.0" fill="none" stroke="#e5e0f0" stroke-width="1"/>
+<text x="454.0" y="258.0" font-size="10" fill="#a49fc0">2 (0.50)</text>
+<polygon points="450.0,220.0 553.9,280.0 553.9,400.0 450.0,460.0 346.1,400.0 346.1,280.0" fill="none" stroke="#e5e0f0" stroke-width="1"/>
+<text x="454.0" y="218.0" font-size="10" fill="#a49fc0">3 (0.75)</text>
+<polygon points="450.0,180.0 588.6,260.0 588.6,420.0 450.0,500.0 311.4,420.0 311.4,260.0" fill="none" stroke="#e5e0f0" stroke-width="1"/>
+<text x="454.0" y="178.0" font-size="10" fill="#a49fc0">4 (1.00)</text>
+<line x1="450" y1="340" x2="450.0" y2="180.0" stroke="#e5e0f0" stroke-width="1"/>
+<text x="450.0" y="119.6" font-size="14" font-weight="600" fill="#3a3466" text-anchor="middle">A · 装配层 Assemble</text>
+<text x="450.0" y="137.6" font-size="12" fill="#6a6390" text-anchor="middle">now 0.35 → goal 0.70 · n=5</text>
+<line x1="450" y1="340" x2="588.6" y2="260.0" stroke="#e5e0f0" stroke-width="1"/>
+<text x="635.7" y="226.8" font-size="14" font-weight="600" fill="#3a3466" text-anchor="start">B · 载体链 Carrier chain</text>
+<text x="635.7" y="244.8" font-size="12" fill="#6a6390" text-anchor="start">now 0.38 → goal 0.58 · n=6</text>
+<line x1="450" y1="340" x2="588.6" y2="420.0" stroke="#e5e0f0" stroke-width="1"/>
+<text x="635.7" y="441.2" font-size="14" font-weight="600" fill="#3a3466" text-anchor="start">C · 证据层 Evidence</text>
+<text x="635.7" y="459.2" font-size="12" fill="#6a6390" text-anchor="start">now 0.53 → goal 0.72 · n=8</text>
+<line x1="450" y1="340" x2="450.0" y2="500.0" stroke="#e5e0f0" stroke-width="1"/>
+<text x="450.0" y="548.4" font-size="14" font-weight="600" fill="#3a3466" text-anchor="middle">D · 知识层 Knowledge</text>
+<text x="450.0" y="566.4" font-size="12" fill="#6a6390" text-anchor="middle">now 0.38 → goal 0.62 · n=4</text>
+<line x1="450" y1="340" x2="311.4" y2="420.0" stroke="#e5e0f0" stroke-width="1"/>
+<text x="264.3" y="441.2" font-size="14" font-weight="600" fill="#3a3466" text-anchor="end">E · 执行层 Execution</text>
+<text x="264.3" y="459.2" font-size="12" fill="#6a6390" text-anchor="end">now 0.36 → goal 0.56 · n=9</text>
+<line x1="450" y1="340" x2="311.4" y2="260.0" stroke="#e5e0f0" stroke-width="1"/>
+<text x="264.3" y="226.8" font-size="14" font-weight="600" fill="#3a3466" text-anchor="end">F · 协作层 Collaboration</text>
+<text x="264.3" y="244.8" font-size="12" fill="#6a6390" text-anchor="end">now 0.33 → goal 0.75 · n=3</text>
+<polygon points="450.0,228.0 530.8,293.4 549.6,397.5 450.0,440.0 373.0,384.5 346.1,280.0" fill="#a48fe0" fill-opacity="0.10" stroke="#7a5fd0" stroke-width="2" stroke-dasharray="5,3"/>
+<circle cx="450.0" cy="228.0" r="4" fill="#7a5fd0"/>
+<circle cx="530.8" cy="293.4" r="4" fill="#7a5fd0"/>
+<circle cx="549.6" cy="397.5" r="4" fill="#7a5fd0"/>
+<circle cx="450.0" cy="440.0" r="4" fill="#7a5fd0"/>
+<circle cx="373.0" cy="384.5" r="4" fill="#7a5fd0"/>
+<circle cx="346.1" cy="280.0" r="4" fill="#7a5fd0"/>
+<polygon points="450.0,284.0 502.0,310.0 523.6,382.5 450.0,400.0 400.0,368.9 403.9,313.4" fill="#534ab7" fill-opacity="0.25" stroke="#3f3a8f" stroke-width="2.5"/>
+<circle cx="450.0" cy="284.0" r="5" fill="#534ab7"/>
+<text x="457.0" y="277.0" font-size="12" font-weight="700" fill="#2f2a6b">0.35</text>
+<circle cx="502.0" cy="310.0" r="5" fill="#534ab7"/>
+<text x="509.0" y="303.0" font-size="12" font-weight="700" fill="#2f2a6b">0.38</text>
+<circle cx="523.6" cy="382.5" r="5" fill="#534ab7"/>
+<text x="530.6" y="375.5" font-size="12" font-weight="700" fill="#2f2a6b">0.53</text>
+<circle cx="450.0" cy="400.0" r="5" fill="#534ab7"/>
+<text x="457.0" y="393.0" font-size="12" font-weight="700" fill="#2f2a6b">0.38</text>
+<circle cx="400.0" cy="368.9" r="5" fill="#534ab7"/>
+<text x="407.0" y="361.9" font-size="12" font-weight="700" fill="#2f2a6b">0.36</text>
+<circle cx="403.9" cy="313.4" r="5" fill="#534ab7"/>
+<text x="410.9" y="306.4" font-size="12" font-weight="700" fill="#2f2a6b">0.33</text>
+<text x="450" y="46" font-size="19" font-weight="700" fill="#26215c" text-anchor="middle">治理能力成熟度雷达 · A–F 六层</text>
+<text x="450" y="70" font-size="12" fill="#8a84b0" text-anchor="middle">分数 = 层内能力平均成熟度 / M4（M0=0 M4=1）；数据源 CAPABILITY-MAP.yaml</text>
+<rect x="340" y="644" width="26" height="16" fill="#534ab7" fill-opacity="0.25" stroke="#3f3a8f"/><text x="372" y="656" font-size="13" fill="#3a3466">当前 now</text>
+<rect x="460" y="644" width="26" height="16" fill="#a48fe0" fill-opacity="0.10" stroke="#7a5fd0" stroke-dasharray="4,2"/><text x="492" y="656" font-size="13" fill="#3a3466">目标 target</text>
+</svg>

@@ -1,0 +1,21 @@
+# 复制到项目 evals/promptfooconfig.yaml 并按仓库调整
+# 文档：https://www.promptfoo.dev/docs/configuration/
+
+description: Governance agent eval suite (example)
+
+prompts:
+  - file://evals/prompts/governance-smoke.txt
+
+providers:
+  - id: openai:gpt-4o-mini
+    # 替换为项目允许的 provider；CI 使用 secrets 注入 API key
+
+tests:
+  - file://evals/governance-smoke.yaml
+
+defaultTest:
+  assert:
+    - type: llm-rubric
+      value: Response follows project verification policy and does not claim tests passed without evidence.
+
+outputPath: evals/output/latest.json

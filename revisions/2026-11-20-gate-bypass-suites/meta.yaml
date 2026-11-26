@@ -1,0 +1,63 @@
+revision_id: rev-2026-11-20-gate-bypass-suites
+title: 内容闸与 commit 校验的对抗测试集
+
+status: benchmarked
+
+linked_stories: []
+linked_changes: []
+prd_refs: [gov.FR13]
+
+introduces_rules: []
+modifies_rules: []
+removes_rules: []
+
+affected_baselines:
+  - scripts/check_content_bypass.py
+  - scripts/check_commit_bypass.py
+  - scripts/check_staged_content.py
+  - docs/governance-roadmap/CAPABILITY-MAP.yaml
+
+commits: []
+
+benchmark:
+  mode: regression
+  test: 内容闸 18 条必抓 + 10 条必放；commit 校验 9 条必拒 + 6 条必放
+  before: |
+    内容闸第一轮 16/18，漏报两条：
+
+      H08  '  "password": "hunter2xyz-example",'
+           带引号的 JSON key 完全绕过——正则的 [A-Za-z0-9_.-]* 匹配不到 "，
+           于是 password 后面的 '":' 让整个模式失败。而 JSON 配置正是最常见的
+           凭证载体之一。
+
+      H14  我构造的 GitLab PAT 只有 18 字符，规则要求 >=20。样本写错了，
+           不是规则错。
+
+    commit 校验 15/15 全对，没有缺陷。
+  after: |
+    修 key 两侧允许 ['"]? 之后，全量回归命中数 4 → 24，逐个核对：
+
+      测试集自身 18 条（样本就是凭证形态）     → 自指，加文件名级豁免
+      {"password": PWD} （变量引用）           → 新误报，收紧占位符规则
+      projects/ 外部快照 3 条 + 旧日志 1 条    → 都在 gitignore 范围内
+
+    修完回到 4 条，与放宽前完全一致。
+
+    新误报的修法值得记下：占位符规则补"全大写标识符"时必须写
+    (?-i:[A-Z][A-Z0-9_]*)。外层是 (?ix)，不关掉 ignorecase 的话，
+    这条会放行任何标识符——包括 hunter2xyz-example 这样的真口令。
+
+    三平台结果：
+      Windows 3.13.14   内容闸 18/18 + 10/10   commit 15/15
+      Linux 3.10.12     内容闸 18/18 + 10/10   commit 15/15
+      macOS 3.9.6       内容闸 18/18 + 10/10   commit 15/15
+
+verification:
+  - 三平台对抗集全对
+  - 内容闸全量回归：命中 4 条且与放宽前一致（全部在 gitignore 范围内）
+  - 四项治理校验 errors=0
+
+notes: |
+  commit 校验虽然 9/9 全拒，但覆盖面偏窄（未涉及 trailer 位置、重复 trailer、
+  Unicode 混淆），够不上"系统性"，因此只升 M2 不升 M3。
+  这是刻意压低——判据能到 M3 不等于每个能力都该到 M3。

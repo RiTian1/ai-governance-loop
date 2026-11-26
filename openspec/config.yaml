@@ -1,0 +1,28 @@
+schema: spec-driven
+
+context: |
+  本项目使用治理基线框架。
+  变更前请参考 profiles/ 确认适用的 foundations 和 domains。
+  所有实现必须满足 04-verification-policy.md 的证据要求。
+  代理系统见 agents/ 目录，按 core/specialists/design/meta 分层。
+  输出语言约束（MUST）：与用户的对话沟通及所有 artifact（proposal/design/specs/tasks）
+  正文一律使用中文（简体）；代码、命令、路径、API 标识符可保留英文。
+
+rules:
+  proposal:
+    - 正文使用中文（简体）撰写
+    - 标注影响的治理层级（foundation/domain/profile）
+    - 声明是 0→1（greenfield）还是 1→2（brownfield）
+    - 始终包含"非目标"部分
+  design:
+    - 正文使用中文（简体）撰写
+    - 参考 profiles/ 中适用 profile 的 foundations 列表
+    - 架构决策使用 templates/adr-template.md 格式
+    - 明确模块边界和验证路径
+  specs:
+    - 需求与场景描述使用中文（简体）；场景关键字（WHEN/THEN 等）与 API 标识符可保留英文
+  tasks:
+    - 任务描述使用中文（简体）撰写
+    - 每个任务标注对应的 domain 约束
+    - 将任务分解为最多 2 小时的块
+    - 标注验证方式（自动化/手动/降级）

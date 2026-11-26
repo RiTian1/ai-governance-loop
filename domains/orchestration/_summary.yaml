@@ -1,0 +1,72 @@
+schema_version: 1
+
+domain: proj.orch
+canonical_owner: true
+inherits_from: null
+
+tags: [governance, orchestration, evidence, promotion, routing, agent]
+
+rules:
+  - id: proj.orch.r1
+    text: 任何"成功"状态 MUST 能回答三问——谁产出的、产出的是什么（含摘要）、那之后有没有变过；答不上任何一问 MUST 记为 unverified，MUST NOT 记为成功
+    severity: must
+    cross_refs: [domains/orchestration/evidence/index.md]
+    introduced_at: 2026-11-18
+    introduced_by: rev-2026-11-18-governed-orchestration-and-evidence
+
+  - id: proj.orch.r2
+    text: "没有产出证据的完成是 inert success，MUST 排除在晋升统计之外；产出证据 MUST 属于四类之一：变更差异、产物摘要、外部回执、工具调用轨迹"
+    severity: must
+    cross_refs: [domains/orchestration/promotion/index.md]
+    introduced_at: 2026-11-18
+    introduced_by: rev-2026-11-18-governed-orchestration-and-evidence
+
+  - id: proj.orch.r3
+    text: 状态真值 MUST 存放在 append-only 事件流中，MUST NOT 只存在于可被覆盖的统计字段；事件流 MUST 可校验（序号+前序哈希+自身哈希），断链即拒绝继续
+    severity: must
+    cross_refs: [domains/orchestration/evidence/index.md]
+    introduced_at: 2026-11-18
+    introduced_by: rev-2026-11-18-governed-orchestration-and-evidence
+
+  - id: proj.orch.r4
+    text: 对账 MUST 发生在读取侧而非写入侧——被篡改的记录既不得被当作事实下发，也不得被下一次写入固化为新基准
+    severity: must
+    cross_refs: [domains/orchestration/evidence/index.md]
+    introduced_at: 2026-11-18
+    introduced_by: rev-2026-11-18-governed-orchestration-and-evidence
+
+  - id: proj.orch.r5
+    text: 淘汰 MUST 先过硬条件再谈排序；被硬条件拒掉的对象 MUST NOT 因历史表现好而复活
+    severity: must
+    cross_refs: [domains/orchestration/promotion/index.md]
+    introduced_at: 2026-11-18
+    introduced_by: rev-2026-11-18-governed-orchestration-and-evidence
+
+  - id: proj.orch.r6
+    text: 规则/经验的晋升 MUST 来自"带产出证据的执行"；MUST NOT 从对话文本蒸馏得出（蒸馏版实测低于执行版 3~11 个百分点）
+    severity: must
+    cross_refs: [domains/orchestration/promotion/index.md]
+    introduced_at: 2026-11-18
+    introduced_by: rev-2026-11-18-governed-orchestration-and-evidence
+
+  - id: proj.orch.r7
+    text: 判不了 MUST 显式表达（unparsed / unchecked / inconclusive），MUST NOT 折叠成成功或默认值；"没发生"与"正常"在数据结构上 MUST 可区分
+    severity: must
+    cross_refs: [domains/orchestration/evidence/index.md]
+    introduced_at: 2026-11-18
+    introduced_by: rev-2026-11-18-governed-orchestration-and-evidence
+
+  - id: proj.orch.r8
+    text: 编排路由 MUST 是声明式且可复现的（给定同样的意图信号必定命中同一个能力域）；MUST NOT 依赖模型分类这类不可复现的判断
+    severity: must
+    cross_refs: [domains/orchestration/routing/table.yaml]
+    introduced_at: 2026-11-18
+    introduced_by: rev-2026-11-18-governed-orchestration-and-evidence
+
+context_dependencies:
+  - foundations
+  - tooling
+  - project/state-lifecycle-and-recovery
+
+changelog:
+  - 2026-11-18: 创建 L1 域；把 evolver（统计）与 AutoResearch（证据）的分歧收敛成 8 条可校验规则

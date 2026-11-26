@@ -1,0 +1,255 @@
+# 机器可读治理索引（schema v2）
+# 路径均相对于 project-governance.yaml 中的 governance_root（母版仓为 "."）
+# 布局说明见 LAYOUT.md；层级与 token 预算见 02-engineering-principles.md §11
+
+schema_version: 2
+governance_layout: mother-repo-root
+
+# 主文档与流程入口（保留旧版 entries 兼容现有读者）
+entries:
+  - id: governance-index
+    title: 治理总索引
+    path: 00-index.md
+    when_to_read: [explore, proposal, design, apply, verify, archive]
+
+  - id: layout
+    title: 目录布局与路径解析
+    path: LAYOUT.md
+    when_to_read: [explore, proposal, design, apply, verify, archive]
+
+  - id: project-charter
+    title: 平台宪章
+    path: 01-charter.md
+    when_to_read: [explore, proposal, design]
+
+  - id: engineering-principles
+    title: 工程原则（含 §11 知识层级与 token 预算）
+    path: 02-engineering-principles.md
+    when_to_read: [proposal, design, apply, verify, archive]
+
+  - id: phase-governance
+    title: 项目阶段治理约束
+    path: 02-phase-governance.md
+    when_to_read: [explore, proposal, design, apply, verify, archive]
+
+  - id: workflow-policy
+    title: 文档工作流
+    path: 03-document-workflow.md
+    when_to_read: [proposal, design, apply]
+
+  - id: verification-policy
+    title: 验证策略与证据政策
+    path: 04-verification-policy.md
+    when_to_read: [design, apply, verify]
+
+  - id: ai-collaboration
+    title: AI 协作与基线修订政策
+    path: 05-ai-collaboration-policy.md
+    when_to_read: [explore, apply, verify, archive]
+
+  - id: references-policy
+    title: 引用与标准政策
+    path: 06-reference-and-standards-policy.md
+    when_to_read: [proposal, design]
+
+  - id: bootstrap-guide
+    title: 母版初始化与采用
+    path: 07-bootstrap-and-adoption-guide.md
+    when_to_read: [explore, proposal]
+
+  - id: activation-model
+    title: 项目激活模型
+    path: 08-project-activation-model.md
+    when_to_read: [explore, proposal, design, apply]
+
+  - id: revisions-workflow
+    title: 候选修订与晋升流程
+    path: revisions/WORKFLOW.md
+    when_to_read: [apply, verify, archive]
+
+  - id: self-governance
+    title: 自治理与知识演化（长期循环）
+    path: foundations/self-governance-and-knowledge-evolution.md
+    when_to_read: [explore, design, apply, verify, archive]
+
+  - id: progress-traceability
+    title: 进度可追溯与跨工具绑定（BMAD ↔ OpenSpec ↔ Revisions）
+    path: foundations/progress-traceability-and-binding.md
+    when_to_read: [explore, design, apply, verify, archive]
+
+# Profile 入口（同时作为 v1 兼容）
+  - id: solo-developer-profile
+    title: 独立开发者组合
+    path: profiles/solo-developer.md
+    when_to_read: [explore, proposal, design, apply]
+
+  - id: native-security-runtime-profile
+    title: 原生安全运行时项目组合约束
+    path: profiles/native-security-runtime.md
+    when_to_read: [explore, proposal, design, apply, verify]
+
+# 两条与「关切轴 domains/」正交的轴（顶层树，非 domains 子目录）
+  - id: projects-registry
+    title: 项目轴 · 产品实例台账（identity / 真源 / 入口）
+    path: projects/index.md
+    when_to_read: [explore, proposal, design, apply, verify, archive]
+
+  - id: nas-gitlab-project-repositories
+    title: NAS GitLab 项目仓建仓、连接与迁移（按需）
+    path: projects/NAS-GITLAB-REPOSITORIES.md
+    when_to_read: [explore, proposal, design, apply, verify, archive]
+    read_if: 仅当任务涉及 NAS GitLab 项目仓创建、连接、迁移或推送时读取全文
+
+  - id: business-references-index
+    title: 业务参考轴 · 客户现场 / 靶标 / 竞品（related_projects 多值）
+    path: business-references/index.md
+    when_to_read: [explore, proposal, design, apply, verify]
+
+  - id: governance-benchmark-suite
+    title: 治理 Benchmark 测试用例集 · 可共享/复用的任务 + 标准答案 + 判据
+    path: benchmark/README.md
+    when_to_read: [explore, verify, archive]
+    read_if: 仅当需要跑治理增益评测、复用现成基准任务（代码审计 J3b / T04 / T05）、或为 benchmark 扩充新用例时读取全文。素材已内嵌，第三方源码用允许开源分发的授权
+
+  - id: rsi-realworld-benchmark
+    title: 治理增益配对测评 · baseline vs governance 真实长程任务（评分 100 分制）
+    path: docs/experiments/rsi-realworld/README.md
+    when_to_read: [explore, proposal, verify]
+    read_if: 仅当需要评估 governance 对长程研究的增益/负担/误导、复现配对实验，或审阅既有配对裁定结果时读取全文。执行器见 scripts/rsi_realworld_benchmark.py，评分门见 scripts/rsi_evaluate.py
+
+# v2 树化 domain（Loader 通过 levels.L1 装载）
+levels:
+  L1:
+    - id: operations
+      path: domains/operations
+      summary: 运维 / oncall / 容量 / 灾备 / 变更 / 闭环运行时上下文 / 反堆积治理 / 长任务与资源护栏 / 发版记录 / 工作树卫生
+      size_tokens: 1200
+      triggers:
+        keywords: [运维, oncall, runbook, 部署, 灾备, 容量, 闭环, 上下文, housekeeping, 清理, dormant, orphan,
+                   长任务, long-running, preflight, 预检, 资源, 后台, 中断, 并行, 工作树, 脏改动, hygiene, generated_artifacts,
+                   发版, 发版记录, changelog,
+                   <业务域>, 暗网, crawler, 爬虫, tg, telegram, 磁盘水位]
+        files: ["runtime-context.yaml", "scripts/deploy*", "scripts/runbook*", "ops/**", "operations/**",
+                "scripts/preflight_check.py", "scripts/check_worktree_hygiene.py"]
+        phases: [apply, verify, archive]
+
+    - id: projects
+      path: projects
+      summary: 项目轴。产品实例台账：身份 / 代号别名 / 唯一真源 / 发版与 lab 入口 / 关联业务参考；NAS GitLab 建仓与迁移按需读 projects/NAS-GITLAB-REPOSITORIES.md
+      size_tokens: 1400
+      triggers:
+        keywords: [项目, 产品, project, 台账, 真源, GitLab, NAS, 建仓, 仓库, 迁移, 推送, someapp, <采集项目>, <业务域>, 代号, 别名,
+                   deepfake, fake-app-detection, social-media-oinst, aidr, cyberstrike]
+        files: ["project-governance.yaml", "projects/**"]
+        phases: [explore, proposal, design, apply, verify, archive]
+
+    - id: business-references
+      path: business-references
+      summary: 业务参考轴（与项目轴同级）。客户现场 / 靶标 / 竞品等场景参考，一份可关联多个项目
+      size_tokens: 750
+      triggers:
+        keywords: [业务参考, 现场, 客户, 靶标, 竞品, CSC, csc, 客户单机, F5, sso.html, 改链, 回归,
+                   demo.testfire.net, 白名单, provider, 代理, recon]
+        files: ["business-references/**"]
+        phases: [explore, proposal, design, apply, verify]
+
+    - id: tooling
+      path: domains/tooling
+      summary: BMAD / OpenSpec / Revisions / Progress-binding 工具接入与跨工具绑定协议
+      size_tokens: 900
+      triggers:
+        keywords: [bmad, openspec, revision, traceability, 追溯, 进度绑定, epic, story, prd, drift, matrix, frontmatter,
+                   归档, archive, checkpoint, 检查点, 提交, commit, 继续, binding]
+        files:
+          - "_bmad/**"
+          - "openspec/**"
+          - "revisions/**"
+          - "scripts/check_progress_consistency.py"
+          - "scripts/gen_progress_matrix.py"
+          - "scripts/check_commit_message.py"
+          - "scripts/link_revision_to_commits.py"
+        phases: [proposal, design, apply, verify, archive]
+
+    - id: orchestration
+      path: domains/orchestration
+      summary: 治理编排域——成功三问与证据闭环、晋升硬条件、判不了显式表达、声明式路由（proj.orch.r1-r8）
+      size_tokens: 800
+      triggers:
+        keywords: [编排, orchestration, 证据, evidence, 晋升, promotion, 淘汰, 路由, routing,
+                   事件流, event stream, 哈希链, 对账, 判不了, unparsed, inconclusive, unchecked,
+                   inert success, 假成功, 多 agent, work package, 工作包]
+        files:
+          - "domains/orchestration/**"
+        phases: [design, apply, verify, archive]
+
+# v1 兼容：仍以扁平 entries 形式列出尚未树化的 domain，等 Stage B/C 升级
+legacy_domains:
+  - id: ai-code-review
+    title: AI 辅助代码评审与责任分层（分层校验/上下文对齐/签字担责）
+    path: domains/ai-code-review.md
+    when_to_read: [apply, verify, archive]
+
+  - id: runtime-domain
+    title: 原生运行时与跨集成边界
+    path: domains/base-runtime.md
+    when_to_read: [design, apply, verify]
+
+  - id: architecture-domain
+    title: 架构设计物料约束
+    path: domains/architecture
+    when_to_read: [explore, proposal, design]
+
+  - id: backend-domain
+    title: 后端领域约束
+    path: domains/backend
+    when_to_read: [design, apply, verify]
+
+  - id: configuration-domain
+    title: 配置治理约束
+    path: domains/configuration
+    when_to_read: [design, apply, verify]
+
+  - id: observability-domain
+    title: 可观测性约束
+    path: domains/observability
+    when_to_read: [design, apply, verify]
+
+  - id: security-domain
+    title: 安全语义与敏感边界
+    path: domains/security
+    when_to_read: [design, apply, verify]
+
+  - id: automation-domain
+    title: 自动化与回归证据
+    path: domains/automation
+    when_to_read: [design, apply, verify]
+
+  - id: devops-domain
+    title: 构建制品与发布门禁
+    path: domains/devops-ci
+    when_to_read: [design, apply, verify, archive]
+
+  - id: docs-domain
+    title: 文档与接口说明约束
+    path: domains/documentation-and-api
+    when_to_read: [proposal, design, apply, archive]
+
+  - id: agent-tooling-mcp
+    title: Agent 工具与 MCP 治理
+    path: domains/agent-tooling-mcp.md
+    when_to_read: [design, apply, verify]
+
+  - id: soft-waf-platform-adaptation
+    title: 软 WAF 平台适配与测试前置约束
+    path: domains/soft-waf-platform-adaptation.md
+    when_to_read: [design, apply, verify]
+
+  - id: agent-evals
+    title: Agent 评估门禁配置模板
+    path: templates/agent-evals-manifest-template.yaml
+    when_to_read: [verify, archive]
+
+  - id: lab-harness
+    title: 本机实验台事实（机器、运维、测试方法）
+    path: lab/README.md
+    when_to_read: [explore, apply, verify]

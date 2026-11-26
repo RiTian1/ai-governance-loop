@@ -1,0 +1,68 @@
+revision_id: rev-2026-11-20-commit-trailer-hardening
+title: commit 校验的 trailer 语义加固（三个可绕过点）
+
+status: benchmarked
+
+linked_stories: []
+linked_changes: []
+prd_refs: [gov.FR05, gov.FR13]
+
+introduces_rules: []
+modifies_rules: []
+removes_rules: []
+
+affected_baselines:
+  - scripts/check_commit_message.py
+  - scripts/check_commit_bypass.py
+  - docs/governance-roadmap/CAPABILITY-MAP.yaml
+
+commits: []
+
+benchmark:
+  mode: regression
+  test: commit 校验对抗集从 9 条扩到 14 条必拒 + 9 条必放
+  before: |
+    9 条时全对、无缺陷，所以上一轮只升了 M2（judged "覆盖面偏窄"）。
+    扩到 14 条后立刻暴露三个可绕过点：
+
+      K13  正文里任意一行 `Story: gov.S99.99` 都算 trailer——抄一行别人的就凑齐
+      K14  把 Story 写在 subject 里也算数
+      K10  重复 Story 行时 search() 只取第一个，第二个伪造的不会被发现
+      K11  `Change: NULL` 被判定为非 none（只认字面 "none"）
+      K12  `Change: -` 同上
+
+    验证（改前）：
+      $ python -c "validate('feat: x\n\n这里引用别人的\nStory: gov.S99.99\n\nChange: gov.C04.26\n')"
+      → 无错误（应报错）
+  after: |
+    按 git 语义取 trailer 区：从末尾向上扫到第一个空行。
+
+      def trailer_block(msg):
+          lines = msg.rstrip().splitlines()
+          block = []
+          for ln in reversed(lines):
+              if not ln.strip():
+                  break
+              block.append(ln)
+          return "\n".join(reversed(block))
+
+    Story 用 findall 去重，多 ID 报冲突。
+    NONE_VALUES = {none, null, nil, n/a, na, -, —, ""}，并 strip 包裹引号。
+
+    三平台：Windows 3.13 / Linux 3.10 / macOS 3.9.6 均 23/23（14/14 应拒全拒）。
+
+    历史 commit 回归：最近 5 个 PASS；3d0bc74 与 1111610 FAIL，
+    但它们在改前逻辑下同样 FAIL（0 行 Story），非本次引入。
+
+verification:
+  - 对抗集三平台 23/23
+  - 历史 commit 回归（改前/改后对照）
+  - 四项治理校验 errors=0
+
+notes: |
+  上一轮把 commit 校验压在 M2、理由是"9 条不够系统性"，这次证明那个判断是对的：
+  不是没问题，是问得不够狠。扩到 14 条一轮就抓出三个。
+  这条经验值得记进判据设计：**测试集规模本身就是判据的一部分**。
+
+  已知边界（不防）：Story ID 是否真实存在。`gov.S99.99` 格式合法就算过，
+  校验存在性需要扫 _bmad/gov/stories/，属于 validate() 之外的职责。

@@ -1,0 +1,87 @@
+project_id: example-project
+project_name: Example Project
+project_stage: greenfield
+
+governance_layout: docs-governance-subtree
+governance_root: docs/governance
+
+project_type_profile:
+  - desktop-application
+
+active_baseline:
+  charter: 01-charter.md
+  engineering_principles: 02-engineering-principles.md
+  phase_governance: 02-phase-governance.md
+  workflow: 03-document-workflow.md
+  verification: 04-verification-policy.md
+  ai_collaboration: 05-ai-collaboration-policy.md
+  references: 06-reference-and-standards-policy.md
+  activation: 08-project-activation-model.md
+  layout: LAYOUT.md
+
+enabled_foundations:
+  - architecture-and-design-craftsmanship
+  - modeling-and-state-machine-thinking
+  - discrete-math-and-structural-thinking
+
+enabled_domains:
+  - gui
+  - frontend
+  - automation
+  - performance
+  - documentation-and-api
+
+enabled_templates:
+  - prd-template
+  - summary-design-template
+  - detailed-design-template
+  - test-plan-template
+  - design-review-template
+
+# tool.r8：常驻入口面（AGENTS/CLAUDE/alwaysApply mdc/copilot）单工具组 token 预算
+resident_token_budget: 6000
+
+local_overrides: []
+
+authority_map:
+  active_project_rules: []
+  project_specific_docs: []
+  deprecated_parallel_rules: []
+
+frameworks:
+  openspec:
+    enabled: true
+    default: true
+  bmad:
+    enabled: true    # 默认双载体（tool.binding.r11）：功能迭代必须 Story(PRD FR)+change 双向绑定
+  superpowers:
+    enabled: false
+
+# tool.binding.r11：业务代码 glob——commit 变更命中即强制 Change: 非 none（check_commit_message 硬闸）。
+# 按项目实际结构填写；留空 = 不启用该硬闸（仍受 Story + Change/Revision/Rules 任一非 none 约束）。
+code_paths:
+  - "src/**"
+  - "lib/**"
+
+agent_evals:
+  enabled: false
+  provider: promptfoo
+  pr_gate:
+    enabled: true
+    block_merge_on_fail: true
+    min_pass_rate: 0.85
+
+mcp_connectors: []
+
+ide_rules_export:
+  cursor_rules_dir: .cursor/rules
+  copilot_instructions: .github/copilot-instructions.md
+  regenerate_command: python scripts/export-governance-rules.py
+
+migration_mode:
+  status: none
+  notes: ""
+
+adoption_source:
+  governance_template_origin: docs/governance
+  adopted_at: 2026-03-25

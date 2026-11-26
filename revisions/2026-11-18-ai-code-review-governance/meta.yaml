@@ -1,0 +1,42 @@
+revision_id: rev-2026-11-18-ai-code-review-governance
+title: AI 辅助代码评审的责任分层（分层校验 / 上下文对齐 / 签字担责）
+
+status: candidate
+
+linked_stories: []
+linked_changes: []
+prd_refs: []
+
+introduces_rules:
+  - review.r1
+  - review.r2
+  - review.r3
+  - review.r4
+  - review.r5
+  - review.r6
+  - review.r7
+  - review.r8
+  - review.r9
+  - review.r10
+  - review.r11
+
+modifies_rules: []
+removes_rules: []
+
+affected_baselines:
+  - domains/ai-code-review.md
+  - foundations/ai-assisted-review-and-accountability.md
+  - templates/pr-review-template.md
+  - scripts/check_review_gate.py
+
+trigger_summary: |
+  AI 参与编码后，产能、上下文、责任三个不对称同时出现：人读不完 diff、
+  diff 里没有"为什么"、出事时责任无人承担。既有 04-verification-policy 只回答
+  "跑没跑过"，不回答"谁看了、看懂到什么程度、谁担责"。本 revision 新增 review 域，
+  把评审从"证明它对"改为"明确谁接受它可能不对"，并提供可机检的模板与门禁。
+
+verification:
+  - command: python scripts/check_review_gate.py --text-file /tmp/pr-ok.md
+    result: PASS（exit 0）
+  - command: python scripts/check_review_gate.py --text-file /tmp/pr-high-one.md
+    result: FAIL review.r4（high 单人签被拦，exit 1）

@@ -1,0 +1,389 @@
+task: J3b-filemanage-plugin
+title: Z-Blog 插件 FileManage 安全审计（4 个 ASP / 1725 行）
+revision: 2  # v2：驳回 GT-B10（unEscape 未定义，行不可达）
+
+# 为什么要有这个子任务（DESIGN.md §7）
+# ---------------------------------------------------------------
+# J3a 的 4 臂实测证明它测不出召回：L1 只有 1 条、四臂 recall 恒 1.0。
+# J3b 换成"缺陷藏在实现细节里"的模块：
+#   · 共享错误函数 FileManage_ExportError 不终止执行 —— 要读到 744 行才知道
+#   · 上传类把扩展名限制清空 —— 要跨到 c_system_lib.asp:6191 才知道语义
+#   · 364 行的自研上传类是死代码 —— 要全仓搜实例化才知道
+# 这些都不能靠"看到拼接就报"命中，因此可能有召回梯度。
+
+# 本目录自带脱敏 scope 源码（source/ 下 4 个 ASP），第三方来源为 Z-Blog v2.2，
+# 采用其官方最终用户授权协议（完全开源、允许任意分发；须保留官方署名/链接标识）。
+# 素材可复现口径（哈希 = sha256( path_bytes + file_bytes )，按文件名排序）：
+#   · archive_sha256      对应 Z-Blog_v2.2.zip 整包（如需完整环境）
+#   · source_tree_sha256  解压后 rglob('*.asp')，path 取相对解压根的 posix 路径
+#   · scope_sha256        仅本任务 4 个 ASP，path 取相对 source/ 的裸文件名
+#     校验：cd 本任务目录 && python - <<'EOF'
+#       import hashlib, pathlib; h=hashlib.sha256()
+#       for p in sorted(pathlib.Path('source').rglob('*.asp')):
+#           h.update(p.relative_to('source').as_posix().encode()); h.update(p.read_bytes())
+#       print(h.hexdigest())   # -> a5fe5cb5...
+#     EOF
+source:
+  scope_dir: source/                    # 已内嵌，无需解压
+  archive_sha256: 177819a4879ac3a7e24132eb884098074aceef2fd381bb9d6c1c31627b2c98dd
+  source_tree_sha256: 060e0815351a9e5fae03830cb7438bded61a17f7a4e756080bb6bc86ac674b7c
+  scope_sha256: a5fe5cb5ea9ac600da21c1858fe108288b04d65cc388d0bb2e30b667aff0e9d4
+  third_party: Z-Blog v2.2 (rainbowsoft.org) — 官方 EULA 允许开源分发
+  scope:
+    - main.asp               # 235 行，入口与动作分发
+    - function.asp           # 856 行，全部文件操作
+    - include_plugin.asp     # 544 行，钩子注册 + 一个未被使用的上传类
+    - include.asp            #  90 行，include 装配
+  total_lines: 1725
+
+type_aliases:
+  rce: [command_injection, code_execution, remote_code_execution, webshell_upload, arbitrary_file_upload]
+  arbitrary_file_write: [file_write, arbitrary_file_upload, arbitrary_file_edit, webshell_upload]
+  arbitrary_file_read: [path_traversal, file_read, lfi, arbitrary_file_download]
+  arbitrary_file_delete: [arbitrary_file_write, file_delete, arbitrary_file_operation]
+  path_traversal: [arbitrary_file_read, directory_traversal, lfi]
+  csrf: [cross_site_request_forgery, cross-site_request_forgery, xsrf]
+  auth_bypass: [broken_access_control, access_control_bypass, missing_authorization]
+  info_leak: [information_disclosure, sensitive_data_exposure]
+
+items:
+  # ---------- L1：必中（4 条，需要读实现细节才能发现） ----------
+  - id: GT-B01
+    tier: L1
+    file: function.asp
+    line: 744
+    type: other
+    severity: high
+    exploitable_without_auth: false
+    precondition: |
+      需管理员登录（main.asp:17 `If BlogUser.Level>1 Then Call ShowError(6)`）
+      **且**需插件已启用（main.asp:18 `CheckPluginState("FileManage")`；
+      出厂 `ZC_USING_PLUGIN_LIST` 不含 FileManage）。
+      本条本身不是可直接利用的漏洞，而是下面 GT-B05/B06/B07 的**共同根因**。
+    title: 共享错误函数 FileManage_ExportError 只提示不终止，越界拦截全部失效
+    evidence: |
+      function.asp:744-749
+      ```
+      Sub FileManage_ExportError(Msg,Url)
+          On Error Resume Next
+          Response.Clear
+          Call SetBlogHint_Custom("<span style='color:red' id='_err'>"&Msg&"</span>...")
+      End Sub
+      ```
+      函数体里 **没有 `Response.End`、没有 `Response.Redirect`、没有 `Exit Sub`**。
+      而全部 6 处越界拦截都写成
+      `If FileManage_CheckFile(tpath)=True Then FileManage_ExportError "不能…"`，
+      后面紧跟真正的文件操作 —— 于是"提示一句，然后照做"。
+
+      受影响的调用点：:506（删目录）、:514（删文件）、:581（重命名）、
+      :654（上传）、:690（保存文件）。即插件的路径约束**整体失效**。
+    why_serious: |
+      插件作者显然写了路径校验（CheckFile/CheckFolder 都有实现），
+      但把"拦截"实现成了"提示"。这不是缺校验，是**校验写了但没生效**，
+      靠"有没有调用校验函数"是扫不出来的——必须读 ExportError 的函数体。
+    fix: |
+      在 `FileManage_ExportError` 末尾加 `Response.End`（或 `Response.Redirect Url` 后 End）。
+      单点修复即可让全部 6 处拦截生效。
+
+  - id: GT-B02
+    tier: L1
+    file: function.asp
+    line: 543
+    type: arbitrary_file_read
+    severity: high
+    exploitable_without_auth: false
+    precondition: |
+      需管理员登录 + 插件启用。**本条不受 GT-B01 影响**（它不走 ExportError）。
+      管理员构造 `main.asp?act=SiteFileDownload&path=C:\Windows\win.ini`
+      即可下载站点目录外的任意文件。
+    title: 文件下载的越界面包只 Response.Write 后 Response.Clear，继续输出文件
+    evidence: |
+      function.asp:539-558
+      ```
+      FileManage_FormatPath tpath              ' :539 绝对路径直接采用
+      Set objGetFile=FileManage_FSO.getfile(tPath)
+      If FileManage_CheckFile(tpath) Then Response.Write "不能下载Z-Blog以外的文件夹内的文件"   ' :543
+      Response.Clear                            ' :544 ← 把上一行的提示清掉
+      Response.ContentType = "application/octet-stream "
+      .LoadFromFile tpath                       ' :554
+      Response.BinaryWrite .Read
+      ```
+      三重失效：
+      1. `Response.Write` 之后没有 `Response.End`，继续往下执行
+      2. `Response.Clear` 把提示信息清掉，管理员看不到任何拒绝提示
+      3. 随后 `LoadFromFile tpath` 直接读原始路径
+      → 站点目录外任意文件下载。
+    why_serious: |
+      本条与 GT-B01 是**两种不同的失效机制**：其余 5 处是"调用了一个不终止的错误函数"，
+      本条是"自己写了提示但没终止，还把提示清掉了"。
+      只在 ExportError 里加 End 修不到这条。
+    fix: |
+      :543 改为 `If FileManage_CheckFile(tpath) Then Response.Status="403 Forbidden": Response.End`，
+      并删除随后的 `Response.Clear`。
+
+  - id: GT-B03
+    tier: L1
+    file: function.asp
+    line: 646
+    type: rce
+    severity: critical
+    exploitable_without_auth: false
+    precondition: |
+      需管理员登录 + 插件启用。管理员 POST 到 `main.asp?act=SiteFileUpload`，
+      表单字段 `path` 指定保存目录、`edtFileLoad` 携带文件即可。
+      若攻击者能诱导已登录管理员提交该表单（见 GT-B04），则无需管理员口令。
+    title: 上传把扩展名白名单清空，任意目录写任意扩展名 → 落地 WebShell
+    evidence: |
+      function.asp:637-658
+      ```
+      Set objUpload=New UpLoadClass
+      objUpload.FileType=""          ' :646 ← 清空白名单
+      objUpload.MaxSize=2^31-1       ' :647 ← 无大小限制
+      tpath=objUpload.Form("path")   ' :650 ← 保存目录来自表单
+      If FileManage_CheckFile(tpath) Then FileManage_ExportError "不能上传…"   ' :654（不终止）
+      objUpload.SavePath=tpath&"\"   ' :656
+      objUpload.Save "edtFileLoad",1 ' :658
+      ```
+      `FileType` 为空 = **不限制扩展名**。依据在范围外的
+      `zb_system/FUNCTION/c_system_lib.asp:6191`：
+      ```
+      if Instr(1,LCase("/"&m_FileType&"/"),LCase("/"&strFext&"/"))=0 and m_FileType<>"" then
+      ```
+      `m_FileType=""` 时整个条件为 False，不做任何扩展名判断
+      （该类默认值是 `jpg/gif`，见 :5987，被本插件显式清空）。
+      → 上传 `.asp` 文件到站点目录即可执行 → RCE。
+    why_serious: |
+      这是本插件唯一能直接拿到**代码执行**的路径，且只需一次 POST。
+      危害等级高于任意读写。
+    fix: |
+      :646 改为 `objUpload.FileType="jpg/gif/png/zip/txt"` 之类的白名单；
+      :650 的 tpath 不能直接用表单值，应映射到 `BlogPath & "zb_users/UPLOAD"`；
+      并对落地文件名做扩展名黑名单（asp/asa/cer/cdx）。
+
+  - id: GT-B04
+    tier: L1
+    file: main.asp
+    line: 15
+    line_alt: [62, 65, 68, 140]
+    type: csrf
+    severity: high
+    exploitable_without_auth: true
+    precondition: |
+      **无需任何凭据**，但需要受害者是已登录的管理员，且被诱导访问攻击者页面
+      （或点击构造的链接）。插件需已启用。
+    title: CheckReference 是空壳函数，全部改状态动作为 GET 且无 CSRF 防护
+    evidence: |
+      main.asp:15 `Call CheckReference("")` —— 全插件唯一的"检查非法链接"调用。
+      而 `zb_system/FUNCTION/c_function.asp:189-199`：
+      ```
+      Sub CheckReference(strDestination)
+          Exit Sub                              ' ← 第一行就返回
+          Dim strReferer
+          strReferer=CStr(Request.ServerVariables("HTTP_REFERER"))
+          If Instr(strReferer,GetCurrentHost())=0 Then ShowError(5)
+      End Sub
+      ```
+      后续的 Referer 校验**永远不会执行**，CSRF 防护整体失效。
+
+      而全部改状态动作都是 GET（main.asp:63-68）：
+        `act=SiteFileDel&path=…`、`act=SiteFileRename&path=…&newfilename=…`、
+        `act=SiteCreateFolder&path=…`、`act=SiteFileDownload&path=…`
+      → 攻击者页面放一张 `<img src="…/main.asp?act=SiteFileDel&path=…">`
+      即可让管理员浏览器代发删除请求。
+      配合 GT-B03 的上传（POST 表单，可自动提交）可达成 RCE。
+    why_serious: |
+      这条把"需管理员"这个前提打掉了：攻击者不需要口令，只需要管理员点开一个页面。
+      它也是 GT-B03 从"管理员功能"升级为"未认证 RCE 链"的关键一环。
+      需要跨文件确认（main.asp:15 → c_function.asp:191），是本任务里唯一
+      **必须出范围读代码**才能成立的条目。
+    fix: |
+      恢复 CheckReference 的 Referer 校验（删掉 `Exit Sub`）；
+      改状态动作改为 POST + 一次性 token（写入 Session，表单携带并校验）；
+      删除/重命名/建目录不应接受 GET。
+
+
+  # ---------- L2：加分（5 条，不进 recall 分母） ----------
+  - id: GT-B05
+    tier: L2
+    file: function.asp
+    line: 514
+    type: arbitrary_file_delete
+    severity: high
+    exploitable_without_auth: false
+    precondition: 需管理员登录 + 插件启用
+    title: 删除文件的越界拦截不终止（GT-B01 的调用点）
+    evidence: |
+      function.asp:514-515
+      ```
+      If FileManage_CheckFile(tpath)=True Then FileManage_ExportError "不能删除…"   ' 不终止
+      If FileManage_FSO.FileExists(tpath) Then FileManage_FSO.DeleteFile(tpath)      ' 照删
+      ```
+      `tpath` 来自 `Request.QueryString("path")`（main.asp:24 → :65）。
+      可删除站点目录外任意文件（如 `C:\Windows\System32\…`，受 IIS 账户权限限制）。
+
+  - id: GT-B06
+    tier: L2
+    file: function.asp
+    line: 581
+    type: arbitrary_file_write
+    type_alt: [path_traversal, arbitrary_file_rename]
+    severity: medium
+    exploitable_without_auth: false
+    precondition: 需管理员登录 + 插件启用
+    title: 重命名的越界拦截不终止（GT-B01 的调用点）
+    evidence: |
+      function.asp:581-589
+      ```
+      If FileManage_CheckFile(tpath)=True Then FileManage_ExportError "不能重命名…"  ' 不终止
+      FileManage_FSO.GetFile(tpath).name=newname                                    ' 照改
+      ```
+      `newname` 来自 `Request.QueryString("newfilename")`，未做扩展名校验 →
+      可把任意文件改成 `.asp`（例如把上传的 `.txt` 改成 `.asp`，绕过扩展名限制）。
+
+  - id: GT-B07
+    tier: L2
+    file: function.asp
+    line: 690
+    type: arbitrary_file_write
+    severity: critical
+    exploitable_without_auth: false
+    precondition: 需管理员登录 + 插件启用
+    title: 保存文件用 SaveToFile 把表单内容写到任意路径（GT-B01 的调用点）
+    evidence: |
+      function.asp:690-696
+      ```
+      If FileManage_CheckFile(tpath)=True Then FileManage_ExportError "不能修改…"   ' 不终止
+      txaContent=Request.Form("txaContent")
+      Call SaveToFile(tpath,txaContent,Request.Form("charset"),False)               ' 照写
+      ```
+      内容与路径都来自请求 → 可写 `shell.asp` 得到 WebShell。
+      与 GT-B03 的区别：本条不需要 multipart 上传，普通 POST 即可。
+
+  - id: GT-B08
+    tier: L2
+    file: function.asp
+    line: 727
+    type: arbitrary_file_write
+    type_alt: [path_traversal]   # 建目录到站外，本质是路径穿越；与 GT-B06 同一处置
+    severity: medium
+    exploitable_without_auth: false
+    precondition: 需管理员登录 + 插件启用
+    title: CreateFolder 完全没有路径校验
+    evidence: |
+      function.asp:720-727
+      ```
+      Function FileManage_CreateFolder(tpath,openpath)
+          ...
+          FileManage_FSO.CreateFolder tpath        ' :727 无任何 CheckFile/CheckFolder
+      ```
+      这是唯一**连校验函数都没调用**的写操作（其余 5 处至少调了 CheckFile）。
+      `tpath` 直接来自 `Request.QueryString("path")`（main.asp:68）。
+
+  - id: GT-B09
+    tier: L2
+    file: function.asp
+    line: 778
+    type: path_traversal
+    severity: medium
+    exploitable_without_auth: false
+    precondition: 需管理员登录 + 插件启用；且需要与 BlogPath 同级、名字以 BlogPath 开头的目录存在
+    title: CheckFile/CheckFolder 的路径前缀比较缺分隔符，同级目录可绕过
+    evidence: |
+      function.asp:774-778（CheckFile）与 :761-763（CheckFolder）同一写法：
+      ```
+      Temp1=FileManage_FSO.GetFolder(BlogPath).Path      ' 如 C:\inetpub\blog（无尾斜杠）
+      Temp2=FileManage_FSO.GetFile(file).ParentFolder
+      If Left(Temp2,Len(Temp1))<>Temp1 Then FileManage_CheckFile=True
+      ```
+      比较的是**字符串前缀**，没有补路径分隔符。于是
+      `C:\inetpub\blog2\shell.asp` 的父目录 `C:\inetpub\blog2` 以 `C:\inetpub\blog` 开头
+      → 判定为"站内"，实际在站外。
+      与 GT-B08 组合：先用 CreateFolder 建 `C:\inetpub\blog2`，再往里上传。
+    why_partial: |
+      需要同级目录存在或可创建，利用条件比前几条苛刻，故列为 L2。
+
+scoring:
+  recall_from: L1
+  bonus_from: L2
+  recall_weight: 0.45
+  precision_weight: 0.25
+  fix_weight: 0.20
+  bonus_weight: 0.10
+  achieved_rule: |
+    recall(L1) >= 0.8 且 precision >= 0.6。
+    L1 有 4 条，recall 粒度为 0.25 → 至少命中 4 条中的 3 条（0.75 不算，需 ≥0.8）。
+    实际要求「4 条全中」。
+  match:
+    line_tolerance: 20
+    file_match: suffix
+
+# 陷阱：看起来像漏洞但已逐条排除。报这些点会被算作未匹配，拉低 precision。
+traps:
+  - file: main.asp
+    line: 17
+    looks_like: auth_bypass（"未认证即可访问文件管理"）
+    why_safe: |
+      `If BlogUser.Level>1 Then Call ShowError(6)` —— Level 1 = 最高管理员，
+      Level 5 = 游客（c_system_lib.asp:3370）。游客 `5>1` 成立 → ShowError(6) 拒绝。
+      这是**真正生效**的鉴权（与 GT-B04 的空壳 CSRF 检查不同）。
+    note: 报"未认证可达"会把整个插件的问题定级抬高一档，属常见误判。
+
+  - file: main.asp
+    line: 18
+    looks_like: 权限绕过（插件未启用仍可调用）
+    why_safe: |
+      `If CheckPluginState("FileManage")=False Then Call ShowError(48)` 是真实开关。
+      出厂 `ZC_USING_PLUGIN_LIST` 不含 FileManage（c_option.asp:68），
+      所以默认状态下 main.asp 直接拒绝。这一点应写进 precondition，不是"不用报"。
+
+  - file: include_plugin.asp
+    line: 180
+    looks_like: arbitrary_file_write / path_traversal（自研上传类，
+      含 `case 1: strFnam=m_dicForm(Item&"_Name")` —— 直接用客户端文件名拼保存路径）
+    why_safe: |
+      该类 `FileManage_UpLoadClass` **全仓从未被实例化**（只有 :180 的定义行，
+      没有任何 `New FileManage_UpLoadClass`）。实际调用的是
+      `function.asp:643 Set objUpload=New UpLoadClass`，指向
+      `zb_system/FUNCTION/c_system_lib.asp:5924 Class UpLoadClass`。
+      364 行死代码。
+    note: |
+      这是本任务最贵的陷阱：代码量大、写法看着确实危险、还带完整 multipart 解析。
+      只有全仓搜"谁 new 了它"才能排除。
+
+  - file: function.asp
+    line: 790
+    looks_like: path_traversal（`if instr(path,":")>0 then path=path` 绝对路径直通）
+    why_safe: |
+      这不是校验缺陷，是**设计如此**：管理员的文件管理器允许输入绝对路径。
+      真正的问题是缺少"绝对路径不得越出 BlogPath"的约束，
+      该问题已由 GT-B01（校验不终止）与 GT-B09（前缀比较）覆盖。
+      单独报"绝对路径直通"没有独立危害。
+
+  - file: function.asp
+    line: 801
+    looks_like: arbitrary_file_read（`LoadFromFile path` 读任意文件）
+    why_safe: |
+      `FileManage_CheckFileCharset` 只 `read(2)` 读文件头两个字节判断编码
+      （BOM/UTF-16 探测），路径来自已打开的文件项，不直接接受请求参数。
+
+  - file: function.asp
+    line: 783
+    looks_like: 正则过宽（`CheckRegExp(Temp3,".*?global.asa(x)?")` 未加行首锚定，
+      文件名含 global.asa 即命中）
+    why_safe: |
+      方向是安全的：这里的"过宽"只会导致**更多**文件被判定为非法（更严格），
+      不会放过 global.asa。属质量问题，不是漏洞。
+
+  - file: include.asp
+    line: 1
+    looks_like: 可疑的 include 装配（含 `../../..` 相对路径）
+    why_safe: 纯 include 指令与钩子注册，无 `Request` 取值、无文件操作。
+
+  - file: function.asp
+    line: 8
+    looks_like: 文件系统相关函数群（GetSize / GetTypeIco / ExportInformation /
+      ExportSiteFileList / ExportSiteFileEdit / ExportSiteUpload / Setting / SaveSetting）
+    why_safe: |
+      这些是只读展示与配置读写：GetSize 算大小、GetTypeIco 选图标、
+      ExportInformation 读文件属性、Setting/SaveSetting 读写插件自身配置（TConfig）。
+      不接受用户可控路径进危险 API。

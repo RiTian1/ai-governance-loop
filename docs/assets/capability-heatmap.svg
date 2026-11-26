@@ -1,0 +1,208 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 736 1250" width="736" height="1250" role="img" aria-labelledby="t d">
+<title id="t">治理能力成熟度热力矩阵（逐能力 M0–M4）</title>
+<desc id="d">每行一个能力，按层分组；单元格颜色=当前成熟度</desc>
+<rect width="736" height="1250" fill="#ffffff"/>
+<text x="24" y="40" font-size="18" font-weight="700" fill="#111">治理能力成熟度热力矩阵 · 逐能力 M0–M4</text>
+<text x="24" y="62" font-size="11" fill="#888">蓝框=已达成目标；灰=目标更高（仍有差距）。数据源 CAPABILITY-MAP.yaml</text>
+<rect x="250" y="82" width="44" height="24" rx="4" fill="#ece6f8"/>
+<text x="272.0" y="99" font-size="12" font-weight="700" fill="#4a3a86" text-anchor="middle">A</text>
+<rect x="296" y="82" width="44" height="24" rx="4" fill="#ece6f8"/>
+<text x="318.0" y="99" font-size="12" font-weight="700" fill="#4a3a86" text-anchor="middle">B</text>
+<rect x="342" y="82" width="44" height="24" rx="4" fill="#ece6f8"/>
+<text x="364.0" y="99" font-size="12" font-weight="700" fill="#4a3a86" text-anchor="middle">C</text>
+<rect x="388" y="82" width="44" height="24" rx="4" fill="#ece6f8"/>
+<text x="410.0" y="99" font-size="12" font-weight="700" fill="#4a3a86" text-anchor="middle">D</text>
+<rect x="434" y="82" width="44" height="24" rx="4" fill="#ece6f8"/>
+<text x="456.0" y="99" font-size="12" font-weight="700" fill="#4a3a86" text-anchor="middle">E</text>
+<rect x="480" y="82" width="44" height="24" rx="4" fill="#ece6f8"/>
+<text x="502.0" y="99" font-size="12" font-weight="700" fill="#4a3a86" text-anchor="middle">F</text>
+<text x="250" y="74" font-size="12" fill="#6a6390">成熟度 →</text>
+<rect x="250" y="110" width="44" height="26" rx="5" fill="#d6c8f5" stroke="#c9c2e0" stroke-width="1"/>
+<text x="272.0" y="123.0" font-size="13" font-weight="700" fill="#4a3a86" text-anchor="middle">M1</text>
+<text x="20" y="124.0" font-size="12" fill="#3a3466">根目录入口路由</text>
+<text x="20" y="137.0" font-size="10" fill="#8a84b0">cap.assemble.entry</text>
+<text x="538" y="129.0" font-size="12" fill="#a05a2c">→ M3</text>
+<rect x="250" y="140" width="44" height="26" rx="5" fill="#b9a3ec" stroke="#c9c2e0" stroke-width="1"/>
+<text x="272.0" y="153.0" font-size="13" font-weight="700" fill="#3a2d6e" text-anchor="middle">M2</text>
+<text x="20" y="154.0" font-size="12" fill="#3a3466">机器索引内容正确性</text>
+<text x="20" y="167.0" font-size="10" fill="#8a84b0">cap.assemble.index</text>
+<text x="538" y="159.0" font-size="12" fill="#a05a2c">→ M3</text>
+<rect x="250" y="170" width="44" height="26" rx="5" fill="#d6c8f5" stroke="#c9c2e0" stroke-width="1"/>
+<text x="272.0" y="183.0" font-size="13" font-weight="700" fill="#4a3a86" text-anchor="middle">M1</text>
+<text x="20" y="184.0" font-size="12" fill="#3a3466">稀疏装载与分层装配</text>
+<text x="20" y="197.0" font-size="10" fill="#8a84b0">cap.assemble.sload</text>
+<text x="538" y="189.0" font-size="12" fill="#a05a2c">→ M3</text>
+<rect x="250" y="200" width="44" height="26" rx="5" fill="#d6c8f5" stroke="#c9c2e0" stroke-width="1"/>
+<text x="272.0" y="213.0" font-size="13" font-weight="700" fill="#4a3a86" text-anchor="middle">M1</text>
+<text x="20" y="214.0" font-size="12" fill="#3a3466">常驻上下文预算闸</text>
+<text x="20" y="227.0" font-size="10" fill="#8a84b0">cap.assemble.budget</text>
+<text x="538" y="219.0" font-size="12" fill="#a05a2c">→ M2</text>
+<rect x="250" y="230" width="44" height="26" rx="5" fill="#b9a3ec" stroke="#c9c2e0" stroke-width="1"/>
+<text x="272.0" y="243.0" font-size="13" font-weight="700" fill="#3a2d6e" text-anchor="middle">M2</text>
+<text x="20" y="244.0" font-size="12" fill="#3a3466">索引新鲜度门禁</text>
+<text x="20" y="257.0" font-size="10" fill="#8a84b0">cap.assemble.fresh</text>
+<text x="538" y="249.0" font-size="12" fill="#a05a2c">→ M3</text>
+<rect x="296" y="260" width="44" height="26" rx="5" fill="#d6c8f5" stroke="#c9c2e0" stroke-width="1"/>
+<text x="318.0" y="273.0" font-size="13" font-weight="700" fill="#4a3a86" text-anchor="middle">M1</text>
+<text x="20" y="274.0" font-size="12" fill="#3a3466">双载体（Story + Change）</text>
+<text x="20" y="287.0" font-size="10" fill="#8a84b0">cap.chain.dual</text>
+<text x="538" y="279.0" font-size="12" fill="#a05a2c">→ M2</text>
+<rect x="296" y="290" width="44" height="26" rx="5" fill="#b9a3ec" stroke="#c9c2e0" stroke-width="1"/>
+<text x="318.0" y="303.0" font-size="13" font-weight="700" fill="#3a2d6e" text-anchor="middle">M2</text>
+<text x="20" y="304.0" font-size="12" fill="#3a3466">四端反向引用闭合</text>
+<text x="20" y="317.0" font-size="10" fill="#8a84b0">cap.chain.backref</text>
+<text x="538" y="309.0" font-size="12" fill="#a05a2c">→ M3</text>
+<rect x="296" y="320" width="44" height="26" rx="5" fill="#b9a3ec" stroke="#c9c2e0" stroke-width="1"/>
+<text x="318.0" y="333.0" font-size="13" font-weight="700" fill="#3a2d6e" text-anchor="middle">M2</text>
+<text x="20" y="334.0" font-size="12" fill="#3a3466">三端状态机与状态耦合</text>
+<text x="20" y="347.0" font-size="10" fill="#8a84b0">cap.chain.state</text>
+<text x="538" y="339.0" font-size="12" fill="#a05a2c">→ M3</text>
+<rect x="296" y="350" width="44" height="26" rx="5" fill="#d6c8f5" stroke="#c9c2e0" stroke-width="1"/>
+<text x="318.0" y="363.0" font-size="13" font-weight="700" fill="#4a3a86" text-anchor="middle">M1</text>
+<text x="20" y="364.0" font-size="12" fill="#3a3466">CRUD 同步事件（STOP 门）</text>
+<text x="20" y="377.0" font-size="10" fill="#8a84b0">cap.chain.crud</text>
+<text x="538" y="369.0" font-size="12" fill="#a05a2c">→ M2</text>
+<rect x="296" y="380" width="44" height="26" rx="5" fill="#d6c8f5" stroke="#c9c2e0" stroke-width="1"/>
+<text x="318.0" y="393.0" font-size="13" font-weight="700" fill="#4a3a86" text-anchor="middle">M1</text>
+<text x="20" y="394.0" font-size="12" fill="#3a3466">检查点协议（收尾序列）</text>
+<text x="20" y="407.0" font-size="10" fill="#8a84b0">cap.chain.checkpoint</text>
+<text x="538" y="399.0" font-size="12" fill="#a05a2c">→ M2</text>
+<rect x="296" y="410" width="44" height="26" rx="5" fill="#b9a3ec" stroke="#7a5fd0" stroke-width="2.5"/>
+<text x="318.0" y="423.0" font-size="13" font-weight="700" fill="#3a2d6e" text-anchor="middle">M2</text>
+<text x="20" y="424.0" font-size="12" fill="#3a3466">孤儿与废件检测</text>
+<text x="20" y="437.0" font-size="10" fill="#8a84b0">cap.chain.orphan</text>
+<text x="538" y="429.0" font-size="12" fill="#7a5fd0">✓</text>
+<rect x="342" y="440" width="44" height="26" rx="5" fill="#b9a3ec" stroke="#c9c2e0" stroke-width="1"/>
+<text x="364.0" y="453.0" font-size="13" font-weight="700" fill="#3a2d6e" text-anchor="middle">M2</text>
+<text x="20" y="454.0" font-size="12" fill="#3a3466">进度一致性自检</text>
+<text x="20" y="467.0" font-size="10" fill="#8a84b0">cap.evidence.consistency</text>
+<text x="538" y="459.0" font-size="12" fill="#a05a2c">→ M3</text>
+<rect x="342" y="470" width="44" height="26" rx="5" fill="#b9a3ec" stroke="#c9c2e0" stroke-width="1"/>
+<text x="364.0" y="483.0" font-size="13" font-weight="700" fill="#3a2d6e" text-anchor="middle">M2</text>
+<text x="20" y="484.0" font-size="12" fill="#3a3466">规则晋升评测门</text>
+<text x="20" y="497.0" font-size="10" fill="#8a84b0">cap.evidence.promotion</text>
+<text x="538" y="489.0" font-size="12" fill="#a05a2c">→ M3</text>
+<rect x="342" y="500" width="44" height="26" rx="5" fill="#b9a3ec" stroke="#c9c2e0" stroke-width="1"/>
+<text x="364.0" y="513.0" font-size="13" font-weight="700" fill="#3a2d6e" text-anchor="middle">M2</text>
+<text x="20" y="514.0" font-size="12" fill="#3a3466">声明-事实一致性</text>
+<text x="20" y="527.0" font-size="10" fill="#8a84b0">cap.evidence.declaration</text>
+<text x="538" y="519.0" font-size="12" fill="#a05a2c">→ M3</text>
+<rect x="342" y="530" width="44" height="26" rx="5" fill="#d6c8f5" stroke="#c9c2e0" stroke-width="1"/>
+<text x="364.0" y="543.0" font-size="13" font-weight="700" fill="#4a3a86" text-anchor="middle">M1</text>
+<text x="20" y="544.0" font-size="12" fill="#3a3466">判据自测与历史回归</text>
+<text x="20" y="557.0" font-size="10" fill="#8a84b0">cap.evidence.judge</text>
+<text x="538" y="549.0" font-size="12" fill="#a05a2c">→ M3</text>
+<rect x="342" y="560" width="44" height="26" rx="5" fill="#b9a3ec" stroke="#7a5fd0" stroke-width="2.5"/>
+<text x="364.0" y="573.0" font-size="13" font-weight="700" fill="#3a2d6e" text-anchor="middle">M2</text>
+<text x="20" y="574.0" font-size="12" fill="#3a3466">成熟度判据的诚实性（M0–M4 门槛校验）</text>
+<text x="20" y="587.0" font-size="10" fill="#8a84b0">cap.evidence.maturity</text>
+<text x="538" y="579.0" font-size="12" fill="#7a5fd0">✓</text>
+<rect x="342" y="590" width="44" height="26" rx="5" fill="#b9a3ec" stroke="#c9c2e0" stroke-width="1"/>
+<text x="364.0" y="603.0" font-size="13" font-weight="700" fill="#3a2d6e" text-anchor="middle">M2</text>
+<text x="20" y="604.0" font-size="12" fill="#3a3466">评测执行质量（判分正确性 + 启动前置条件）</text>
+<text x="20" y="617.0" font-size="10" fill="#8a84b0">cap.evidence.benchmark</text>
+<text x="538" y="609.0" font-size="12" fill="#a05a2c">→ M3</text>
+<rect x="342" y="620" width="44" height="26" rx="5" fill="#8f75dd" stroke="#7a5fd0" stroke-width="2.5"/>
+<text x="364.0" y="633.0" font-size="13" font-weight="700" fill="#2a1f56" text-anchor="middle">M3</text>
+<text x="20" y="634.0" font-size="12" fill="#3a3466">内容与凭证闸</text>
+<text x="20" y="647.0" font-size="10" fill="#8a84b0">cap.evidence.content</text>
+<text x="538" y="639.0" font-size="12" fill="#7a5fd0">✓</text>
+<rect x="342" y="650" width="44" height="26" rx="5" fill="#8f75dd" stroke="#7a5fd0" stroke-width="2.5"/>
+<text x="364.0" y="663.0" font-size="13" font-weight="700" fill="#2a1f56" text-anchor="middle">M3</text>
+<text x="20" y="664.0" font-size="12" fill="#3a3466">commit 协议校验</text>
+<text x="20" y="677.0" font-size="10" fill="#8a84b0">cap.evidence.commit</text>
+<text x="538" y="669.0" font-size="12" fill="#7a5fd0">✓</text>
+<rect x="388" y="680" width="44" height="26" rx="5" fill="#b9a3ec" stroke="#c9c2e0" stroke-width="1"/>
+<text x="410.0" y="693.0" font-size="13" font-weight="700" fill="#3a2d6e" text-anchor="middle">M2</text>
+<text x="20" y="694.0" font-size="12" fill="#3a3466">Revision 晋升流程</text>
+<text x="20" y="707.0" font-size="10" fill="#8a84b0">cap.knowledge.promotion</text>
+<text x="538" y="699.0" font-size="12" fill="#a05a2c">→ M3</text>
+<rect x="388" y="710" width="44" height="26" rx="5" fill="#d6c8f5" stroke="#c9c2e0" stroke-width="1"/>
+<text x="410.0" y="723.0" font-size="13" font-weight="700" fill="#4a3a86" text-anchor="middle">M1</text>
+<text x="20" y="724.0" font-size="12" fill="#3a3466">变更工件不当基线</text>
+<text x="20" y="737.0" font-size="10" fill="#8a84b0">cap.knowledge.baseline</text>
+<text x="538" y="729.0" font-size="12" fill="#a05a2c">→ M2</text>
+<rect x="388" y="740" width="44" height="26" rx="5" fill="#b9a3ec" stroke="#c9c2e0" stroke-width="1"/>
+<text x="410.0" y="753.0" font-size="13" font-weight="700" fill="#3a2d6e" text-anchor="middle">M2</text>
+<text x="20" y="754.0" font-size="12" fill="#3a3466">知识库健康自检</text>
+<text x="20" y="767.0" font-size="10" fill="#8a84b0">cap.knowledge.health</text>
+<text x="538" y="759.0" font-size="12" fill="#a05a2c">→ M3</text>
+<rect x="388" y="770" width="44" height="26" rx="5" fill="#d6c8f5" stroke="#c9c2e0" stroke-width="1"/>
+<text x="410.0" y="783.0" font-size="13" font-weight="700" fill="#4a3a86" text-anchor="middle">M1</text>
+<text x="20" y="784.0" font-size="12" fill="#3a3466">运行时执行事实沉淀</text>
+<text x="20" y="797.0" font-size="10" fill="#8a84b0">cap.knowledge.runtime</text>
+<text x="538" y="789.0" font-size="12" fill="#a05a2c">→ M2</text>
+<rect x="434" y="800" width="44" height="26" rx="5" fill="#b9a3ec" stroke="#c9c2e0" stroke-width="1"/>
+<text x="456.0" y="813.0" font-size="13" font-weight="700" fill="#3a2d6e" text-anchor="middle">M2</text>
+<text x="20" y="814.0" font-size="12" fill="#3a3466">容器可写层与容器日志回收</text>
+<text x="20" y="827.0" font-size="10" fill="#8a84b0">cap.exec.container-hygiene</text>
+<text x="538" y="819.0" font-size="12" fill="#a05a2c">→ M3</text>
+<rect x="434" y="830" width="44" height="26" rx="5" fill="#d6c8f5" stroke="#c9c2e0" stroke-width="1"/>
+<text x="456.0" y="843.0" font-size="13" font-weight="700" fill="#4a3a86" text-anchor="middle">M1</text>
+<text x="20" y="844.0" font-size="12" fill="#3a3466">统一门禁入口</text>
+<text x="20" y="857.0" font-size="10" fill="#8a84b0">cap.exec.gates</text>
+<text x="538" y="849.0" font-size="12" fill="#a05a2c">→ M2</text>
+<rect x="434" y="860" width="44" height="26" rx="5" fill="#d6c8f5" stroke="#c9c2e0" stroke-width="1"/>
+<text x="456.0" y="873.0" font-size="13" font-weight="700" fill="#4a3a86" text-anchor="middle">M1</text>
+<text x="20" y="874.0" font-size="12" fill="#3a3466">git / Cursor 确定性钩子</text>
+<text x="20" y="887.0" font-size="10" fill="#8a84b0">cap.exec.hooks</text>
+<text x="538" y="879.0" font-size="12" fill="#a05a2c">→ M2</text>
+<rect x="434" y="890" width="44" height="26" rx="5" fill="#d6c8f5" stroke="#c9c2e0" stroke-width="1"/>
+<text x="456.0" y="903.0" font-size="13" font-weight="700" fill="#4a3a86" text-anchor="middle">M1</text>
+<text x="20" y="904.0" font-size="12" fill="#3a3466">长任务与资源护栏</text>
+<text x="20" y="917.0" font-size="10" fill="#8a84b0">cap.exec.longtask</text>
+<text x="538" y="909.0" font-size="12" fill="#a05a2c">→ M2</text>
+<rect x="434" y="920" width="44" height="26" rx="5" fill="#d6c8f5" stroke="#c9c2e0" stroke-width="1"/>
+<text x="456.0" y="933.0" font-size="13" font-weight="700" fill="#4a3a86" text-anchor="middle">M1</text>
+<text x="20" y="934.0" font-size="12" fill="#3a3466">观测口径完整性（指标键名锚定、产出根全覆盖、日志存活前置）</text>
+<text x="20" y="947.0" font-size="10" fill="#8a84b0">cap.exec.observability-integrity</text>
+<text x="538" y="939.0" font-size="12" fill="#a05a2c">→ M2</text>
+<rect x="434" y="950" width="44" height="26" rx="5" fill="#d6c8f5" stroke="#c9c2e0" stroke-width="1"/>
+<text x="456.0" y="963.0" font-size="13" font-weight="700" fill="#4a3a86" text-anchor="middle">M1</text>
+<text x="20" y="964.0" font-size="12" fill="#3a3466">暴露面实证分级（端口可达 → 外部连接占用 → 请求级交互）</text>
+<text x="20" y="977.0" font-size="10" fill="#8a84b0">cap.exec.exposure-evidence</text>
+<text x="538" y="969.0" font-size="12" fill="#a05a2c">→ M2</text>
+<rect x="434" y="980" width="44" height="26" rx="5" fill="#d6c8f5" stroke="#c9c2e0" stroke-width="1"/>
+<text x="456.0" y="993.0" font-size="13" font-weight="700" fill="#4a3a86" text-anchor="middle">M1</text>
+<text x="20" y="994.0" font-size="12" fill="#3a3466">工作树卫生归因</text>
+<text x="20" y="1007.0" font-size="10" fill="#8a84b0">cap.exec.hygiene</text>
+<text x="538" y="999.0" font-size="12" fill="#a05a2c">→ M2</text>
+<rect x="434" y="1010" width="44" height="26" rx="5" fill="#8f75dd" stroke="#7a5fd0" stroke-width="2.5"/>
+<text x="456.0" y="1023.0" font-size="13" font-weight="700" fill="#2a1f56" text-anchor="middle">M3</text>
+<text x="20" y="1024.0" font-size="12" fill="#3a3466">凭据保险箱（加密静态存储 + 读取审计）</text>
+<text x="20" y="1037.0" font-size="10" fill="#8a84b0">cap.exec.vault</text>
+<text x="538" y="1029.0" font-size="12" fill="#7a5fd0">✓</text>
+<rect x="434" y="1040" width="44" height="26" rx="5" fill="#b9a3ec" stroke="#7a5fd0" stroke-width="2.5"/>
+<text x="456.0" y="1053.0" font-size="13" font-weight="700" fill="#3a2d6e" text-anchor="middle">M2</text>
+<text x="20" y="1054.0" font-size="12" fill="#3a3466">地基门禁可移植性</text>
+<text x="20" y="1067.0" font-size="10" fill="#8a84b0">cap.exec.portable</text>
+<text x="538" y="1059.0" font-size="12" fill="#7a5fd0">✓</text>
+<rect x="480" y="1070" width="44" height="26" rx="5" fill="#d6c8f5" stroke="#c9c2e0" stroke-width="1"/>
+<text x="502.0" y="1083.0" font-size="13" font-weight="700" fill="#4a3a86" text-anchor="middle">M1</text>
+<text x="20" y="1084.0" font-size="12" fill="#3a3466">权威优先级与冲突裁决</text>
+<text x="20" y="1097.0" font-size="10" fill="#8a84b0">cap.collab.authority</text>
+<text x="538" y="1089.0" font-size="12" fill="#a05a2c">→ M3</text>
+<rect x="480" y="1100" width="44" height="26" rx="5" fill="#8f75dd" stroke="#c9c2e0" stroke-width="1"/>
+<text x="502.0" y="1113.0" font-size="13" font-weight="700" fill="#2a1f56" text-anchor="middle">M3</text>
+<text x="20" y="1114.0" font-size="12" fill="#3a3466">AI 产出质量契约</text>
+<text x="20" y="1127.0" font-size="10" fill="#8a84b0">cap.collab.output</text>
+<text x="538" y="1119.0" font-size="12" fill="#a05a2c">→ M4</text>
+<rect x="480" y="1130" width="44" height="26" rx="5" fill="#ece4fb" stroke="#c9c2e0" stroke-width="1"/>
+<text x="502.0" y="1143.0" font-size="13" font-weight="700" fill="#5e4a9e" text-anchor="middle">M0</text>
+<text x="20" y="1144.0" font-size="12" fill="#3a3466">编排治理底线</text>
+<text x="20" y="1157.0" font-size="10" fill="#8a84b0">cap.collab.orch</text>
+<text x="538" y="1149.0" font-size="12" fill="#a05a2c">→ M2</text>
+<text x="24" y="1190" font-size="12" fill="#3a3466">图例：</text>
+<rect x="70" y="1176" width="34" height="18" rx="4" fill="#ece4fb"/>
+<text x="87" y="1189" font-size="12" font-weight="700" fill="#5e4a9e" text-anchor="middle">M0</text>
+<rect x="122" y="1176" width="34" height="18" rx="4" fill="#d6c8f5"/>
+<text x="139" y="1189" font-size="12" font-weight="700" fill="#4a3a86" text-anchor="middle">M1</text>
+<rect x="174" y="1176" width="34" height="18" rx="4" fill="#b9a3ec"/>
+<text x="191" y="1189" font-size="12" font-weight="700" fill="#3a2d6e" text-anchor="middle">M2</text>
+<rect x="226" y="1176" width="34" height="18" rx="4" fill="#8f75dd"/>
+<text x="243" y="1189" font-size="12" font-weight="700" fill="#2a1f56" text-anchor="middle">M3</text>
+<rect x="278" y="1176" width="34" height="18" rx="4" fill="#534ab7"/>
+<text x="295" y="1189" font-size="12" font-weight="700" fill="#ffffff" text-anchor="middle">M4</text>
+<rect x="336" y="1176" width="20" height="18" rx="4" fill="#fff" stroke="#7a5fd0" stroke-width="2.5"/>
+<text x="364" y="1189" font-size="12" fill="#3a3466">已达成目标</text>
+</svg>
